@@ -1,6 +1,8 @@
 package com.realityexpander.guessasketch.di
 
 import com.google.gson.Gson
+import com.realityexpander.guessasketch.data.remote.api.SetupApi
+import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import dagger.Module
 import dagger.Provides
@@ -10,6 +12,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -30,6 +34,17 @@ object AppModule {
     @Provides
     fun provideGsonInstance(): Gson {
         return Gson()
+    }
+
+    @Singleton
+    @Provides
+    fun provideSetupApi(okHttpClient: OkHttpClient): SetupApi {
+        return Retrofit.Builder()
+            .baseUrl(Constants.HTTP_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create(SetupApi::class.java)
     }
 
 
