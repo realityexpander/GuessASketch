@@ -9,4 +9,10 @@ object Constants {
     private const val HTTP_BASE_URL_EMULATOR = "http://10.0.2.2:8005/" // for emulator
 
     val HTTP_BASE_URL = if (USE_LOCALHOST) HTTP_BASE_URL_LOCALHOST else HTTP_BASE_URL_REMOTE
+
+    const val MIN_PLAYER_NAME_LENGTH = 4
+    const val MAX_PLAYER_NAME_LENGTH = 12
+
+    const val MIN_ROOM_NAME_LENGTH = 4
+    const val MAX_ROOM_NAME_LENGTH = 16
 }
