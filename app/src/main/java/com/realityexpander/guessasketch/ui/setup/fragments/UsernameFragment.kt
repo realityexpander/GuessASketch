@@ -68,18 +68,9 @@ class UsernameFragment: Fragment(R.layout.fragment_username) {
                     InputTooShortError -> {
                         snackbar(R.string.error_room_name_too_short, value = MIN_PLAYER_NAME_LENGTH)
                     }
-                    is CreateRoomEvent -> TODO()
-                    is CreateRoomErrorEvent -> TODO()
-
-                    is GetRoomEvent -> TODO()
-                    GetRoomEmptyEvent -> TODO()
-                    is GetRoomErrorEvent -> TODO()
-
-                    is JoinRoomEvent -> TODO()
-                    is JoinRoomErrorEvent -> TODO()
-
-                    ShowLoadingEvent -> TODO()
-                    HideLoadingEvent -> TODO()
+                    else -> {
+                        // Do nothing
+                    }
                 }
             }
         }
