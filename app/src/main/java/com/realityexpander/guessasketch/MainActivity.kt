@@ -1,4 +1,4 @@
-package com.plcoding.doodlekong
+package com.realityexpander.guessasketch
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

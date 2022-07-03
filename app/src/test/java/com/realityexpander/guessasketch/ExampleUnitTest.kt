@@ -1,4 +1,4 @@
-package com.plcoding.doodlekong
+package com.realityexpander.guessasketch
 
 import org.junit.Test
 

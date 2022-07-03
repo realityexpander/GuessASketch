@@ -8,8 +8,9 @@
         <item>7</item>
         <item>8</item>
     </string-array>
-    <string name="app_name">Doodlekong</string>
+    <string name="app_name">Guess-A-Sketch</string>
     <string name="apiBaseUrl">10.0.2.2:8001/ws/</string>
+    <string name="apiBaseUrlLocalhost">localhost:8001/ws/</string>
     <string name="choose_a_username">Choose a username</string>
     <string name="next">Next</string>
     <string name="username">Username</string>
@@ -41,7 +42,7 @@
     <string name="rationale_record_audio">To enable speech to text, you need to permit recording audio.</string>
     <string name="speech_to_text_info">Simply speak into your microphone to quickly guess words. To disable this function, press on the microphone icon again.</string>
     <string name="speech_not_available">Speech recognition is not available for your device.</string>
-    <string name="doodlekong">Doodlekong</string>
+    <string name="guessasketch">Guess-a-Sketch</string>
     <string name="choose_your_word">You are next, choose your word!</string>
     <string name="create_a_new_room">Create a New Room</string>
     <string name="search_for_rooms">Search for rooms...</string>
