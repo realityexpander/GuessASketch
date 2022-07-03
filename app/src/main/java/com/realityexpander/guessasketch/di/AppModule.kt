@@ -3,6 +3,8 @@ package com.realityexpander.guessasketch.di
 import android.content.Context
 import com.google.gson.Gson
 import com.realityexpander.guessasketch.data.remote.api.SetupApi
+import com.realityexpander.guessasketch.repository.SetupRepository
+import com.realityexpander.guessasketch.repository.SetupRepositoryImpl
 import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import dagger.Module
@@ -21,6 +23,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideSetupRepository(
+        setupApi: SetupApi,
+        @ApplicationContext context: Context
+    ): SetupRepository = SetupRepositoryImpl(setupApi, context)
 
     @Singleton
     @Provides

@@ -12,7 +12,8 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.GuessASketch">
         <activity android:name=".ui.setup.SetupActivity"
-                android:exported="true">
+            android:windowSoftInputMode="adjustResize"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,14 +22,9 @@
         </activity>
 
         <activity android:name=".ui.drawing.DrawingActivity"
-                android:windowSoftInputMode="adjustPan"
-                android:screenOrientation="portrait"
-                android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait"
+            android:exported="true">
         </activity>
 
     </application>

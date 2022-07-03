@@ -10,6 +10,7 @@ import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import com.realityexpander.guessasketch.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class SetupViewModel @Inject constructor(
     private val setupRepository: SetupRepository,
     private val dispatchers: DispatcherProvider
@@ -49,7 +51,7 @@ class SetupViewModel @Inject constructor(
         data class JoinRoomErrorEvent(val error: String): SetupEvent()
     }
 
-    // SharedFlow ==> Emits the values only once (like showing a snackbar)
+    // SharedFlow ==> Emits the values only once, to possibly multiple listeners. (for showing a snackbar)
     private val _setupEvent = MutableSharedFlow<SetupEvent>()
     val setupEvent: SharedFlow<SetupEvent> = _setupEvent
 
