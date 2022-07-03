@@ -1,5 +1,6 @@
 package com.realityexpander.guessasketch.di
 
+import android.content.Context
 import com.google.gson.Gson
 import com.realityexpander.guessasketch.data.remote.api.SetupApi
 import com.realityexpander.guessasketch.util.Constants
@@ -7,6 +8,7 @@ import com.realityexpander.guessasketch.util.DispatcherProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -61,4 +63,10 @@ object AppModule {
 
         }
     }
+
+    @Singleton
+    @Provides
+    fun provideApplicationContext(
+        @ApplicationContext context: Context
+    ) = context
 }
