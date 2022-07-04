@@ -2,8 +2,8 @@ package com.realityexpander.guessasketch.ui.setup.fragments
 
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.ArrayAdapter
-import androidx.annotation.ArrayRes
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -13,8 +13,10 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentCreateRoomBinding
-import com.realityexpander.guessasketch.ui.setup.SetupViewModel
-import com.realityexpander.guessasketch.ui.setup.SetupViewModel.SetupEvent
+import com.realityexpander.guessasketch.ui.setup.CreateRoomViewModel
+import com.realityexpander.guessasketch.ui.setup.CreateRoomViewModel.SetupEvent
+import com.realityexpander.guessasketch.util.Constants.MAX_ROOM_NAME_LENGTH
+import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,12 +29,14 @@ class CreateRoomFragment: Fragment(R.layout.fragment_create_room) {
     private val binding
         get() = _binding!!
 
-    private val viewModel: SetupViewModel by viewModels()
+    private val viewModel: CreateRoomViewModel by viewModels()
     private val args: CreateRoomFragmentArgs by navArgs()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCreateRoomBinding.bind(view)
+
+        requireActivity().window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
         setupRoomSizeSpinner()
 
@@ -81,24 +85,20 @@ class CreateRoomFragment: Fragment(R.layout.fragment_create_room) {
                         binding. createRoomProgressBar.isVisible = false
                         snackbar(setupEvent.errorMessage)
                     }
-                    SetupEvent.HideLoadingEvent ->
-                        binding.createRoomProgressBar.isVisible = false
                     SetupEvent.InputEmptyError ->
                         snackbar(getString(R.string.error_field_empty))
                     SetupEvent.InputTooLongError ->
-                        snackbar(getString(R.string.error_room_name_too_long))
+                        snackbar(R.string.error_room_name_too_long, MAX_ROOM_NAME_LENGTH)
                     SetupEvent.InputTooShortError ->
-                        snackbar(getString(R.string.error_room_name_too_short))
+                        snackbar(R.string.error_room_name_too_short, MIN_ROOM_NAME_LENGTH)
+                    SetupEvent.HideLoadingEvent ->
+                        binding.createRoomProgressBar.isVisible = false
                     else -> {
                         // do nothing
                     }
                 }
             }
         }
-    }
-
-    private fun getStringArrayItem(@ArrayRes stringArrayResId: Int, itemIndex: Int): String {
-        return resources.getStringArray(stringArrayResId)[itemIndex]
     }
 
     override fun onDestroy() {

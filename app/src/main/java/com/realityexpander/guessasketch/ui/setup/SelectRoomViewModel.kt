@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SetupViewModel @Inject constructor(
+class SelectRoomViewModel @Inject constructor(
     private val setupRepository: SetupRepository,
     private val dispatchers: DispatcherProvider
 ) : ViewModel() {
@@ -27,32 +27,18 @@ class SetupViewModel @Inject constructor(
     // UI Events for the setup screens
     sealed class SetupEvent {
 
-        /// Validation ///
-        object InputEmptyError: SetupEvent()
-        object InputTooShortError: SetupEvent()
-        object InputTooLongError: SetupEvent()
-
         /// UI Events ///
-        object ShowLoadingEvent: SetupEvent() // show the progress indicator
-        object HideLoadingEvent: SetupEvent()
+        object HideLoadingEvent: SetupEvent() // hide the progress indicator
 
         /// Navigation ///
-        data class NavigateToSelectRoomEvent(val playerName: String): SetupEvent()
         data class NavigateToCreateRoomEvent(val playerName: String): SetupEvent()
 
-
         /// REPOSITORY CALLS ///
-
-        // CreateRoom Fragment
-        object CreateRoomEvent: SetupEvent()
-        data class CreateRoomErrorEvent(val errorMessage: String): SetupEvent()
-
-        // Both Fragments
         data class JoinRoomEvent(val roomName: String): SetupEvent()
         data class JoinRoomErrorEvent(val errorMessage: String): SetupEvent()
     }
 
-    // SelectRoom fragment - Room List events
+    // Room List events
     sealed class RoomsEvent {
         object InitialState: RoomsEvent()
         object ShowLoadingEvent: RoomsEvent()
@@ -72,59 +58,6 @@ class SetupViewModel @Inject constructor(
     fun emitSetupEvent(event: SetupEvent) {
         viewModelScope.launch {
             _setupEvent.emit(event)
-        }
-    }
-
-    fun validatePlayerNameAndNavigateToSelectRoom(playerName: String) {
-
-        viewModelScope.launch(dispatchers.main) {
-            val trimmedPlayerName = playerName.trim()
-
-            when {
-                trimmedPlayerName.isEmpty() ->
-                    _setupEvent.emit(SetupEvent.InputEmptyError)
-                trimmedPlayerName.length < MIN_PLAYER_NAME_LENGTH ->
-                    _setupEvent.emit(SetupEvent.InputTooShortError)
-                trimmedPlayerName.length > MAX_PLAYER_NAME_LENGTH ->
-                    _setupEvent.emit(SetupEvent.InputTooLongError)
-                else -> _setupEvent.emit(SetupEvent.NavigateToSelectRoomEvent(playerName))
-            }
-        }
-    }
-
-    fun createRoom(roomName: String, maxPlayers: Int) {
-
-        viewModelScope.launch(dispatchers.main) {
-            val trimmedRoomName = roomName.trim()
-
-            when {
-                trimmedRoomName.isEmpty() ->
-                    _setupEvent.emit(SetupEvent.InputEmptyError)
-                trimmedRoomName.length < MIN_ROOM_NAME_LENGTH ->
-                    _setupEvent.emit(SetupEvent.InputTooShortError)
-                trimmedRoomName.length > MAX_ROOM_NAME_LENGTH ->
-                    _setupEvent.emit(SetupEvent.InputTooLongError)
-                else -> {
-                    val newRoom = Room(roomName, maxPlayers)
-
-                    when (val result = setupRepository.createRoom(newRoom)) {
-                        is Resource.Success -> {
-                            _setupEvent.emit(SetupEvent.JoinRoomEvent(newRoom.roomName))
-                        }
-                        is Resource.Error   -> {
-                            _setupEvent.emit(
-                                SetupEvent.CreateRoomErrorEvent(
-                                    result.message ?: "Unknown error"
-                                )
-                            )
-                        }
-                        else -> {
-                            // Should never get here
-                            _setupEvent.emit(SetupEvent.HideLoadingEvent)
-                        }
-                    }
-                }
-            }
         }
     }
 

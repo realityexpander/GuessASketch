@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentSelectRoomBinding
 import com.realityexpander.guessasketch.ui.adapters.RoomAdapter
-import com.realityexpander.guessasketch.ui.setup.SetupViewModel
-import com.realityexpander.guessasketch.ui.setup.SetupViewModel.SetupEvent
-import com.realityexpander.guessasketch.ui.setup.SetupViewModel.RoomsEvent
+import com.realityexpander.guessasketch.ui.setup.SelectRoomViewModel
+import com.realityexpander.guessasketch.ui.setup.SelectRoomViewModel.SetupEvent
+import com.realityexpander.guessasketch.ui.setup.SelectRoomViewModel.RoomsEvent
 import com.realityexpander.guessasketch.util.Constants.SEARCH_TEXT_DEBOUNCE_DELAY_MILLIS
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
@@ -34,12 +34,15 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
     private val binding
         get() = _binding!!
 
-    private val viewModel: SetupViewModel by activityViewModels()
+    private val viewModel: SelectRoomViewModel by activityViewModels()
 
     private val args: SelectRoomFragmentArgs by navArgs()
 
     @Inject
     lateinit var roomAdapter: RoomAdapter
+
+    // Prevent crashing bug with recycler view
+    private var updateRoomsJob: Job? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -131,7 +134,9 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
                     binding.tvNoRoomsFound.isVisible = isEmpty
                     binding.ivNoRoomsFound.isVisible = isEmpty
 
-                    lifecycleScope.launch {
+                    // Prevents a crash when updating the recyclerview
+                    updateRoomsJob?.cancel()
+                    updateRoomsJob = lifecycleScope.launch {
                         roomAdapter.updateDataset(roomsEvent.rooms)
                     }
                 }

@@ -9,9 +9,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentPlayerNameBinding
-import com.realityexpander.guessasketch.ui.setup.SetupViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import com.realityexpander.guessasketch.ui.setup.SetupViewModel.SetupEvent.*
+import com.realityexpander.guessasketch.ui.setup.UsernameViewModel.SetupEvent.*
+import com.realityexpander.guessasketch.ui.setup.UsernameViewModel
 import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.navigateSafely
@@ -25,7 +25,7 @@ class UsernameFragment: Fragment(R.layout.fragment_player_name) {
     private val binding
         get() = _binding!!
 
-    private val viewModel: SetupViewModel by activityViewModels()
+    private val viewModel: UsernameViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -63,10 +63,10 @@ class UsernameFragment: Fragment(R.layout.fragment_player_name) {
                         snackbar(R.string.error_field_empty)
                     }
                     InputTooLongError -> {
-                        snackbar(R.string.error_room_name_too_long, value = MAX_PLAYER_NAME_LENGTH)
+                        snackbar(R.string.error_room_name_too_long, MAX_PLAYER_NAME_LENGTH)
                     }
                     InputTooShortError -> {
-                        snackbar(R.string.error_room_name_too_short, value = MIN_PLAYER_NAME_LENGTH)
+                        snackbar(R.string.error_room_name_too_short, MIN_PLAYER_NAME_LENGTH)
                     }
                     else -> {
                         // Do nothing

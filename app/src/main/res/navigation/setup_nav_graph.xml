@@ -19,8 +19,7 @@
         <action
                 android:id="@+id/action_selectRoomFragment_to_createRoomFragment"
                 app:destination="@id/createRoomFragment"
-                app:popUpTo="@id/selectRoomFragment"
-                app:popUpToInclusive="false" />
+                app:popUpTo="@id/selectRoomFragment" />
         <action
                 android:id="@+id/action_selectRoomFragment_to_drawingActivity"
                 app:destination="@id/drawingActivity" />
