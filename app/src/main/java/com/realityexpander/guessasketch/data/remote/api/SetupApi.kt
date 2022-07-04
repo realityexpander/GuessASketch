@@ -17,12 +17,12 @@ interface SetupApi {
         @Body createRoomRequest: Room
     ): Response<BasicApiResponse>
 
-    @GET("/api/getRooms/")
+    @GET("/api/getRooms")
     suspend fun getRooms(
         @Query("searchQuery") searchQuery: String
     ): Response<BasicApiResponseWithData<List<Room>>>
 
-    @GET("/api/joinRoom/")
+    @GET("/api/joinRoom")
     suspend fun joinRoom(
         @Query("roomName") roomName: String,
         @Query("playerName") playerName: String

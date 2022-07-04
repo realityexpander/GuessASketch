@@ -8,7 +8,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.realityexpander.guessasketch.R
-import com.realityexpander.guessasketch.databinding.FragmentUsernameBinding
+import com.realityexpander.guessasketch.databinding.FragmentPlayerNameBinding
 import com.realityexpander.guessasketch.ui.setup.SetupViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import com.realityexpander.guessasketch.ui.setup.SetupViewModel.SetupEvent.*
@@ -16,13 +16,12 @@ import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
-class UsernameFragment: Fragment(R.layout.fragment_username) {
+class UsernameFragment: Fragment(R.layout.fragment_player_name) {
 
-    private var _binding: FragmentUsernameBinding? = null
+    private var _binding: FragmentPlayerNameBinding? = null
     private val binding
         get() = _binding!!
 
@@ -30,7 +29,7 @@ class UsernameFragment: Fragment(R.layout.fragment_username) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentUsernameBinding.bind(view)
+        _binding = FragmentPlayerNameBinding.bind(view)
 
         listenToEvents()
 
@@ -53,7 +52,7 @@ class UsernameFragment: Fragment(R.layout.fragment_username) {
                             )
                         )
 
-//                        Buggy way
+//                        Buggy way - crashes when you nav to select room, back to choose username, and then back to select room again
 //                        findNavController().navigate(
 //                            UsernameFragmentDirections.actionUsernameFragmentToSelectRoomFragment(
 //                                event.playerName

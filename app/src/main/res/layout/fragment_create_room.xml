@@ -94,6 +94,6 @@
         app:layout_constraintTop_toBottomOf="@+id/tilRoomSize"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
-        app:lottie_rawRes="@raw/loading" />
+        app:lottie_rawRes="@raw/loading2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -116,7 +116,7 @@
             android:layout_height="150dp"
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
-            app:lottie_rawRes="@raw/loading"
+            app:lottie_rawRes="@raw/loading2"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/rvChat"
             app:layout_constraintEnd_toEndOf="@+id/rvChat"

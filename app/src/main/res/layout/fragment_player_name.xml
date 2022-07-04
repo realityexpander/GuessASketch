@@ -6,38 +6,40 @@
     android:layout_height="match_parent">
 
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/materialTextView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/choose_a_username"
-        android:textSize="28sp"
-        app:layout_constraintBottom_toTopOf="@+id/tilUsername"
-        app:layout_constraintStart_toStartOf="@+id/tilUsername" />
+            android:id="@+id/materialTextView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:text="@string/choose_a_player_name"
+            android:textSize="28sp"
+            app:layout_constraintBottom_toTopOf="@+id/tilUsername"
+            app:layout_constraintStart_toStartOf="@+id/tilUsername" />
 
     <ImageView
             android:id="@+id/ivDoodlekong"
-            android:layout_width="293dp"
-            android:layout_height="208dp"
+            android:layout_width="243dp"
+            android:layout_height="149dp"
             app:layout_constraintBottom_toTopOf="@+id/materialTextView2"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.455"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.333"
-            app:srcCompat="@drawable/ic_appicon2" />
+            app:layout_constraintVertical_bias="0.206"
+            app:srcCompat="@drawable/cat_lineart" />
 
     <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvWelcome"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:text="@string/guessasketch"
-            android:textSize="48sp"
+            android:textSize="42sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/materialTextView2"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.495"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivDoodlekong" />
+            app:layout_constraintTop_toBottomOf="@+id/ivDoodlekong"
+            app:layout_constraintVertical_bias="0.022" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilUsername"
@@ -54,23 +56,25 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etUsername"
-            style="@style/TextInputStyle"
-            android:maxLength="12"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="text" />
+                android:id="@+id/etUsername"
+                style="@style/TextInputStyle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="text"
+                android:maxLength="12" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnNext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/next"
-        app:layout_constraintEnd_toEndOf="@+id/tilUsername"
-        app:layout_constraintTop_toBottomOf="@+id/tilUsername" />
+            android:id="@+id/btnNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/next"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/tilUsername"
+            app:layout_constraintTop_toBottomOf="@+id/tilUsername"
+            app:layout_constraintVertical_bias="0.125" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

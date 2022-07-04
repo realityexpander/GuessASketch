@@ -81,7 +81,7 @@
         app:layout_constraintTop_toTopOf="@+id/rvRooms"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
-        app:lottie_rawRes="@raw/loading" />
+        app:lottie_rawRes="@raw/loading2" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/materialTextView"
@@ -94,15 +94,16 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCreateRoom"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/create_room"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:strokeWidth="0dp" />
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:id="@+id/btnCreateRoom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_room"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:strokeWidth="2dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

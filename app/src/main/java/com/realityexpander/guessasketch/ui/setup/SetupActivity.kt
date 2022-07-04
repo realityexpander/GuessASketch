@@ -17,6 +17,7 @@ class SetupActivity : AppCompatActivity() {
 
         // Disable night mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
 
         binding = ActivitySetupBinding.inflate(layoutInflater)
         setContentView(binding.root)

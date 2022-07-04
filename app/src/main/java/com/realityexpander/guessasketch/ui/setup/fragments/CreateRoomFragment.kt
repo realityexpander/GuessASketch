@@ -5,7 +5,6 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentCreateRoomBinding
-import com.realityexpander.guessasketch.databinding.FragmentUsernameBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

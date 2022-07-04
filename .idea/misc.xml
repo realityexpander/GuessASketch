@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DesignSurface">
+    <option name="filePathToDrawableBackgroundType">
+      <map>
+        <entry key="app/src/main/res/drawable-v24/ic_appicon2.xml" value="WHITE" />
+      </map>
+    </option>
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/drawable-v24/doodle_shape_background.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/ic_appicon.xml" value="0.25" />
+        <entry key="app/src/main/res/drawable-v24/ic_appicon2.xml" value="0.189" />
         <entry key="app/src/main/res/drawable-v24/ic_appicon_v2.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/ic_baseline_arrow_drop_down_24.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/ic_baseline_send_24.xml" value="0.25" />
@@ -29,11 +35,15 @@
         <entry key="app/src/main/res/drawable-v24/shape_incoming_message.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/shape_outgoing_message.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/text_input_box_selector.xml" value="0.25" />
+        <entry key="app/src/main/res/drawable/cat_lineart.xml" value="0.2365" />
         <entry key="app/src/main/res/drawable/crazy_cool_cat_2015041430.xml" value="0.25" />
         <entry key="app/src/main/res/drawable/ic_appicon2.xml" value="0.25" />
+        <entry key="app/src/main/res/drawable/image2vector.xml" value="0.2365" />
+        <entry key="app/src/main/res/drawable/image2vector__1_.xml" value="0.2365" />
         <entry key="app/src/main/res/layout/activity_drawing.xml" value="0.20652173913043478" />
         <entry key="app/src/main/res/layout/activity_setup.xml" value="0.37604166666666666" />
-        <entry key="app/src/main/res/layout/fragment_create_room.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/fragment_create_room.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_player_name.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_select_room.xml" value="0.25" />
         <entry key="app/src/main/res/layout/fragment_username.xml" value="0.25" />
         <entry key="app/src/main/res/layout/item_announcement.xml" value="0.25" />
@@ -45,6 +55,7 @@
         <entry key="app/src/main/res/layout/textview_room_size.xml" value="0.25" />
       </map>
     </option>
+    <option name="lastSelectedDrawableBackgroundType" value="WHITE" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />

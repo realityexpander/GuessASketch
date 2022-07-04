@@ -1,4 +1,4 @@
-package com.realityexpander.guessasketch.adapters
+package com.realityexpander.guessasketch.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

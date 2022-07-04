@@ -11,7 +11,7 @@
     <string name="app_name">Guess-A-Sketch</string>
     <string name="apiBaseUrl">10.0.2.2:8001/ws/</string>
     <string name="apiBaseUrlLocalhost">localhost:8001/ws/</string>
-    <string name="choose_a_username">Choose a username</string>
+    <string name="choose_a_player_name">Choose a player name</string>
     <string name="next">Next</string>
     <string name="username">Username</string>
     <string name="join_room">Join Room</string>

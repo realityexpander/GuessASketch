@@ -26,6 +26,9 @@ class SetupViewModel @Inject constructor(
 
     sealed class SetupEvent {
 
+        // NO-OP
+        object NoOpEvent: SetupEvent()
+
         /// Validation ///
         object InputEmptyError: SetupEvent()
         object InputTooShortError: SetupEvent()
@@ -37,18 +40,23 @@ class SetupViewModel @Inject constructor(
 
         /// Navigation ///
         data class NavigateToSelectRoomEvent(val playerName: String): SetupEvent()
+        data class NavigateToCreateRoomEvent(val playerName: String): SetupEvent()
 
 
         /// REPOSITORY CALLS ///
-        data class CreateRoomEvent(val room: Room): SetupEvent()
-        data class CreateRoomErrorEvent(val error: String): SetupEvent()
 
+        // CreateRoom Fragment
+        data class CreateRoomEvent(val room: Room): SetupEvent()
+        data class CreateRoomErrorEvent(val errorMessage: String): SetupEvent()
+
+        // SelectRoom Fragment
         data class GetRoomEvent(val rooms: List<Room>): SetupEvent()
-        data class GetRoomErrorEvent(val error: String): SetupEvent()
+        data class GetRoomErrorEvent(val errorMessage: String): SetupEvent()
         object GetRoomEmptyEvent: SetupEvent()
 
+        // Both Fragments
         data class JoinRoomEvent(val roomName: String): SetupEvent()
-        data class JoinRoomErrorEvent(val error: String): SetupEvent()
+        data class JoinRoomErrorEvent(val errorMessage: String): SetupEvent()
     }
 
     // SharedFlow ==> Emits the values only once, to possibly multiple listeners. (for showing a snackbar)
@@ -56,9 +64,14 @@ class SetupViewModel @Inject constructor(
     val setupEvent: SharedFlow<SetupEvent> = _setupEvent
 
     // StateFlow ==> Emits value when set and also Re-Emits value after config change (used to reload the data into UI list)
-    private val _rooms = MutableStateFlow<SetupEvent>(SetupEvent.GetRoomEmptyEvent)
+    private val _rooms = MutableStateFlow<SetupEvent>(SetupEvent.NoOpEvent)
     val rooms: StateFlow<SetupEvent> = _rooms
 
+    fun emitSetupEvent(event: SetupEvent) {
+        viewModelScope.launch {
+            _setupEvent.emit(event)
+        }
+    }
 
     fun validatePlayerNameAndNavigateToSelectRoom(playerName: String) {
 
@@ -90,13 +103,20 @@ class SetupViewModel @Inject constructor(
                 trimmedRoomName.length > MAX_ROOM_NAME_LENGTH ->
                     _setupEvent.emit(SetupEvent.InputTooLongError)
                 else -> {
+                    _setupEvent.emit(SetupEvent.ShowLoadingEvent)
                     when (val result = setupRepository.createRoom(room)) {
                         is Resource.Success -> {
                             _setupEvent.emit(SetupEvent.HideLoadingEvent)
                             _setupEvent.emit(SetupEvent.NavigateToSelectRoomEvent(room.roomName))
                         }
-                        is Resource.Error   ->
-                            _setupEvent.emit(SetupEvent.CreateRoomErrorEvent(result.message ?: "Unknown error"))
+                        is Resource.Error   -> {
+                            _setupEvent.emit(SetupEvent.HideLoadingEvent)
+                            _setupEvent.emit(
+                                SetupEvent.CreateRoomErrorEvent(
+                                    result.message ?: "Unknown error"
+                                )
+                            )
+                        }
                         is Resource.Loading ->
                             _setupEvent.emit(SetupEvent.ShowLoadingEvent)
                     }
@@ -110,18 +130,25 @@ class SetupViewModel @Inject constructor(
         viewModelScope.launch(dispatchers.main) {
             val trimmedQuery = searchQuery.trim()
 
+            _rooms.value = SetupEvent.ShowLoadingEvent
             when (val result = setupRepository.getRooms(trimmedQuery)) {
                 is Resource.Success -> {
                     when (val rooms = result.data) {
                         null -> _rooms.value = SetupEvent.GetRoomEmptyEvent
                         else -> _rooms.value = SetupEvent.GetRoomEvent(rooms)
                     }
-                    _setupEvent.emit(SetupEvent.HideLoadingEvent)
                 }
-                is Resource.Error   ->
-                    _setupEvent.emit(SetupEvent.GetRoomErrorEvent(result.message ?: "Unknown error"))
-                is Resource.Loading ->
-                    _setupEvent.emit(SetupEvent.ShowLoadingEvent)
+                is Resource.Error   -> {
+                    _setupEvent.emit(
+                        SetupEvent.GetRoomErrorEvent(
+                            result.message ?: "Unknown error"
+                        )
+                    )
+                }
+                else -> {
+                    // Should never get here
+                    _rooms.value = SetupEvent.GetRoomEmptyEvent
+                }
             }
         }
     }
@@ -132,12 +159,12 @@ class SetupViewModel @Inject constructor(
             val trimmedRoomName = roomName.trim()
             val trimmedPlayerName = playerName.trim()
 
+            _setupEvent.emit(SetupEvent.ShowLoadingEvent)
             when (val result
                     = setupRepository.joinRoom(trimmedPlayerName, trimmedRoomName)) {
                 is Resource.Success -> {
                     _setupEvent.emit(SetupEvent.HideLoadingEvent)
-                    // _setupEvent.emit(SetupEvent.JoinRoomEvent(trimmedRoomName)) // needed?
-                    _setupEvent.emit(SetupEvent.NavigateToSelectRoomEvent(trimmedRoomName))
+                    _setupEvent.emit(SetupEvent.JoinRoomEvent(trimmedRoomName))
                 }
                 is Resource.Error   ->
                     _setupEvent.emit(SetupEvent.JoinRoomErrorEvent(result.message ?: "Unknown error"))

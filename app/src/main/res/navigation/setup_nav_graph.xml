@@ -23,7 +23,7 @@
                 android:id="@+id/action_selectRoomFragment_to_drawingActivity"
                 app:destination="@id/drawingActivity" />
         <argument
-                android:name="username"
+                android:name="playerName"
                 app:argType="string" />
     </fragment>
     <fragment
@@ -34,7 +34,7 @@
                 android:id="@+id/action_createRoomFragment_to_drawingActivity"
                 app:destination="@id/drawingActivity" />
         <argument
-                android:name="username "
+                android:name="playerName"
                 app:argType="string" />
     </fragment>
     <activity
@@ -42,7 +42,7 @@
             android:name="com.realityexpander.guessasketch.ui.drawing.DrawingActivity"
             android:label="DrawingActivity" >
         <argument
-                android:name="username"
+                android:name="playerName"
                 app:argType="string" />
         <argument
                 android:name="roomName"
