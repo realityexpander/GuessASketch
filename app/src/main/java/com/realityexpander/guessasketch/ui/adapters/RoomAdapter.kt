@@ -15,6 +15,7 @@ class RoomAdapter @Inject constructor():
 
     class RoomViewHolder(val binding: ItemRoomBinding) : RecyclerView.ViewHolder(binding.root)
 
+    // This job must be cancelled when the adapter is destroyed to avoid memory leaks.
     suspend fun updateDataset(newDataset: List<Room>) = withContext(Dispatchers.Default) {
         val diff = DiffUtil.calculateDiff(object: DiffUtil.Callback() {
 

@@ -134,8 +134,7 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
                     binding.tvNoRoomsFound.isVisible = isEmpty
                     binding.ivNoRoomsFound.isVisible = isEmpty
 
-                    // Prevents a crash when updating the recyclerview
-                    updateRoomsJob?.cancel()
+                    updateRoomsJob?.cancel()  // Prevents a crash when updating the recyclerview
                     updateRoomsJob = lifecycleScope.launch {
                         roomAdapter.updateDataset(roomsEvent.rooms)
                     }
