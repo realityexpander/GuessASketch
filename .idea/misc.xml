@@ -29,6 +29,8 @@
         <entry key="app/src/main/res/drawable-v24/shape_incoming_message.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/shape_outgoing_message.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/text_input_box_selector.xml" value="0.25" />
+        <entry key="app/src/main/res/drawable/crazy_cool_cat_2015041430.xml" value="0.25" />
+        <entry key="app/src/main/res/drawable/ic_appicon2.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_drawing.xml" value="0.20652173913043478" />
         <entry key="app/src/main/res/layout/activity_setup.xml" value="0.37604166666666666" />
         <entry key="app/src/main/res/layout/fragment_create_room.xml" value="0.25" />

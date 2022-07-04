@@ -52,6 +52,7 @@ class UsernameFragment: Fragment(R.layout.fragment_username) {
                                 "playerName" to event.playerName
                             )
                         )
+
 //                        Buggy way
 //                        findNavController().navigate(
 //                            UsernameFragmentDirections.actionUsernameFragmentToSelectRoomFragment(
