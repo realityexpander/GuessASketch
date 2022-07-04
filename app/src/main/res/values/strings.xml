@@ -46,7 +46,7 @@
     <string name="choose_your_word">You are next, choose your word!</string>
     <string name="create_a_new_room">Create a New Room</string>
     <string name="search_for_rooms">Search for rooms...</string>
-    <string name="no_rooms_found">No Rooms Found :(</string>
+    <string name="no_rooms_found">No Rooms Found</string>
     <string name="listening">Listening...</string>
     <string name="error_unknown">Unknown Error</string>
     <string name="create">Create</string>

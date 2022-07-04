@@ -69,10 +69,6 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
 
         // Setup CreateRoom button
         binding.btnCreateRoom.setOnClickListener {
-//            findNavController().navigateSafely(
-//                R.id.action_selectRoomFragment_to_createRoomFragment,
-//                bundleOf("playerName" to args.playerName)
-//            )
             viewModel.emitSetupEvent(SetupEvent.NavigateToCreateRoomEvent(args.playerName))
         }
 
@@ -89,6 +85,7 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
         }
     }
 
+    // Listen to the UI Events
     private fun listenToEvents() = lifecycleScope.launchWhenStarted {
         viewModel.setupEvent.collect { event ->
             when (event) {
@@ -134,6 +131,7 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
         }
     }
 
+    // Track the room list changes
     private fun subscribeToObservers() = lifecycleScope.launchWhenStarted {
         viewModel.rooms.collect { roomEvent ->
             when(roomEvent) {
