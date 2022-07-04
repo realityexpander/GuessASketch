@@ -152,8 +152,7 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
                     snackbar(roomsEvent.errorMessage)
                 }
                 is RoomsEvent.InitialState -> {
-                    // do nothing
-                    Unit
+                    binding.roomsProgressBar.isVisible = false
                 }
 
             }

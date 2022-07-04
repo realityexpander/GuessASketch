@@ -36,7 +36,7 @@ class CreateRoomFragment: Fragment(R.layout.fragment_create_room) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCreateRoomBinding.bind(view)
 
-        requireActivity().window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+        //requireActivity().window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
 
         setupRoomSizeSpinner()
 
@@ -69,6 +69,7 @@ class CreateRoomFragment: Fragment(R.layout.fragment_create_room) {
                         viewModel.createRoom(roomName, maxPlayers)
                     }
                     is SetupEvent.JoinRoomEvent -> {
+                        binding.createRoomProgressBar.isVisible = false
                         findNavController().navigateSafely(
                             R.id.action_createRoomFragment_to_drawingActivity,
                             bundleOf(

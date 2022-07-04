@@ -9,7 +9,7 @@
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/white</item>
         <item name="android:textViewStyle">@style/TextViewStyle</item>
-        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowBackground">#BBFFBB</item>
         <item name="textInputStyle">@style/TextInputStyle</item>
         <item name="android:progressBarStyleHorizontal">@style/HorizontalProgressBarStyle</item>
         <item name="materialButtonStyle">@style/ButtonStyle</item>

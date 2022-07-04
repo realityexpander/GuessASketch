@@ -22,9 +22,9 @@
             android:id="@+id/tvCreateRoom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="212dp"
             android:text="@string/create_a_new_room"
             android:textSize="40sp"
+            app:layout_constraintBottom_toTopOf="@+id/tilRoomName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.494"
             app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +48,7 @@
                 android:id="@+id/etRoomName"
                 style="@style/TextInputStyle"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="57dp"
                 android:inputType="text"
                 android:maxLength="16" />
 
@@ -89,17 +89,18 @@
             app:layout_constraintVertical_bias="0.0" />
 
     <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/createRoomProgressBar"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tilRoomSize"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/loading2" />
+            android:id="@+id/createRoomProgressBar"
+            android:layout_width="117dp"
+            android:layout_height="92dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/tilRoomName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.502"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/loading2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
