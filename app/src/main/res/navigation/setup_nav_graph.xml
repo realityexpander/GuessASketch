@@ -18,7 +18,9 @@
             android:label="SelectRoomFragment" >
         <action
                 android:id="@+id/action_selectRoomFragment_to_createRoomFragment"
-                app:destination="@id/createRoomFragment" />
+                app:destination="@id/createRoomFragment"
+                app:popUpTo="@id/selectRoomFragment"
+                app:popUpToInclusive="false" />
         <action
                 android:id="@+id/action_selectRoomFragment_to_drawingActivity"
                 app:destination="@id/drawingActivity" />
@@ -32,7 +34,8 @@
             android:label="CreateRoomFragment" >
         <action
                 android:id="@+id/action_createRoomFragment_to_drawingActivity"
-                app:destination="@id/drawingActivity" />
+                app:destination="@id/drawingActivity"
+                app:popUpTo="@id/createRoomFragment" />
         <argument
                 android:name="playerName"
                 app:argType="string" />

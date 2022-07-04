@@ -42,7 +42,7 @@
         <entry key="app/src/main/res/drawable/image2vector__1_.xml" value="0.2365" />
         <entry key="app/src/main/res/layout/activity_drawing.xml" value="0.20652173913043478" />
         <entry key="app/src/main/res/layout/activity_setup.xml" value="0.37604166666666666" />
-        <entry key="app/src/main/res/layout/fragment_create_room.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_create_room.xml" value="0.25" />
         <entry key="app/src/main/res/layout/fragment_player_name.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_select_room.xml" value="0.25" />
         <entry key="app/src/main/res/layout/fragment_username.xml" value="0.25" />

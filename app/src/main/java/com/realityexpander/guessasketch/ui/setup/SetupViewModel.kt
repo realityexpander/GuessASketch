@@ -24,10 +24,8 @@ class SetupViewModel @Inject constructor(
     private val dispatchers: DispatcherProvider
 ) : ViewModel() {
 
+    // UI Events for the setup screens
     sealed class SetupEvent {
-
-        // NO-OP
-        object NoOpEvent: SetupEvent()
 
         /// Validation ///
         object InputEmptyError: SetupEvent()
@@ -46,17 +44,21 @@ class SetupViewModel @Inject constructor(
         /// REPOSITORY CALLS ///
 
         // CreateRoom Fragment
-        data class CreateRoomEvent(val room: Room): SetupEvent()
+        object CreateRoomEvent: SetupEvent()
         data class CreateRoomErrorEvent(val errorMessage: String): SetupEvent()
-
-        // SelectRoom Fragment
-        data class GetRoomEvent(val rooms: List<Room>): SetupEvent()
-        data class GetRoomErrorEvent(val errorMessage: String): SetupEvent()
-        object GetRoomEmptyEvent: SetupEvent()
 
         // Both Fragments
         data class JoinRoomEvent(val roomName: String): SetupEvent()
         data class JoinRoomErrorEvent(val errorMessage: String): SetupEvent()
+    }
+
+    // SelectRoom fragment - Room List events
+    sealed class RoomsEvent {
+        object InitialState: RoomsEvent()
+        object ShowLoadingEvent: RoomsEvent()
+        data class GetRoomsEvent(val rooms: List<Room>): RoomsEvent()
+        object GetRoomsEmptyEvent: RoomsEvent()
+        data class GetRoomsErrorEvent(val errorMessage: String): RoomsEvent()
     }
 
     // SharedFlow ==> Emits the values only once, to possibly multiple listeners. (for showing a snackbar)
@@ -64,8 +66,8 @@ class SetupViewModel @Inject constructor(
     val setupEvent: SharedFlow<SetupEvent> = _setupEvent
 
     // StateFlow ==> Emits value when set and also Re-Emits value after config change (used to reload the data into UI list)
-    private val _rooms = MutableStateFlow<SetupEvent>(SetupEvent.NoOpEvent)
-    val rooms: StateFlow<SetupEvent> = _rooms
+    private val _rooms = MutableStateFlow<RoomsEvent>(RoomsEvent.InitialState)
+    val rooms: StateFlow<RoomsEvent> = _rooms
 
     fun emitSetupEvent(event: SetupEvent) {
         viewModelScope.launch {
@@ -90,10 +92,10 @@ class SetupViewModel @Inject constructor(
         }
     }
 
-    fun createRoom(room: Room) {
+    fun createRoom(roomName: String, maxPlayers: Int) {
 
         viewModelScope.launch(dispatchers.main) {
-            val trimmedRoomName = room.roomName.trim()
+            val trimmedRoomName = roomName.trim()
 
             when {
                 trimmedRoomName.isEmpty() ->
@@ -103,22 +105,23 @@ class SetupViewModel @Inject constructor(
                 trimmedRoomName.length > MAX_ROOM_NAME_LENGTH ->
                     _setupEvent.emit(SetupEvent.InputTooLongError)
                 else -> {
-                    _setupEvent.emit(SetupEvent.ShowLoadingEvent)
-                    when (val result = setupRepository.createRoom(room)) {
+                    val newRoom = Room(roomName, maxPlayers)
+
+                    when (val result = setupRepository.createRoom(newRoom)) {
                         is Resource.Success -> {
-                            _setupEvent.emit(SetupEvent.HideLoadingEvent)
-                            _setupEvent.emit(SetupEvent.NavigateToSelectRoomEvent(room.roomName))
+                            _setupEvent.emit(SetupEvent.JoinRoomEvent(newRoom.roomName))
                         }
                         is Resource.Error   -> {
-                            _setupEvent.emit(SetupEvent.HideLoadingEvent)
                             _setupEvent.emit(
                                 SetupEvent.CreateRoomErrorEvent(
                                     result.message ?: "Unknown error"
                                 )
                             )
                         }
-                        is Resource.Loading ->
-                            _setupEvent.emit(SetupEvent.ShowLoadingEvent)
+                        else -> {
+                            // Should never get here
+                            _setupEvent.emit(SetupEvent.HideLoadingEvent)
+                        }
                     }
                 }
             }
@@ -130,24 +133,24 @@ class SetupViewModel @Inject constructor(
         viewModelScope.launch(dispatchers.main) {
             val trimmedQuery = searchQuery.trim()
 
-            _rooms.value = SetupEvent.ShowLoadingEvent
+            _rooms.value = RoomsEvent.ShowLoadingEvent
             when (val result = setupRepository.getRooms(trimmedQuery)) {
                 is Resource.Success -> {
                     when (val rooms = result.data) {
-                        null -> _rooms.value = SetupEvent.GetRoomEmptyEvent
-                        else -> _rooms.value = SetupEvent.GetRoomEvent(rooms)
+                        null -> _rooms.value = RoomsEvent.GetRoomsEmptyEvent
+                        else -> _rooms.value = RoomsEvent.GetRoomsEvent(rooms)
                     }
                 }
                 is Resource.Error   -> {
-                    _setupEvent.emit(
-                        SetupEvent.GetRoomErrorEvent(
+                    _rooms.emit(
+                        RoomsEvent.GetRoomsErrorEvent(
                             result.message ?: "Unknown error"
                         )
                     )
                 }
                 else -> {
                     // Should never get here
-                    _rooms.value = SetupEvent.GetRoomEmptyEvent
+                    _rooms.value = RoomsEvent.InitialState
                 }
             }
         }
@@ -159,17 +162,18 @@ class SetupViewModel @Inject constructor(
             val trimmedRoomName = roomName.trim()
             val trimmedPlayerName = playerName.trim()
 
-            _setupEvent.emit(SetupEvent.ShowLoadingEvent)
             when (val result
                     = setupRepository.joinRoom(trimmedPlayerName, trimmedRoomName)) {
                 is Resource.Success -> {
-                    _setupEvent.emit(SetupEvent.HideLoadingEvent)
                     _setupEvent.emit(SetupEvent.JoinRoomEvent(trimmedRoomName))
                 }
                 is Resource.Error   ->
                     _setupEvent.emit(SetupEvent.JoinRoomErrorEvent(result.message ?: "Unknown error"))
-                is Resource.Loading ->
-                    _setupEvent.emit(SetupEvent.ShowLoadingEvent)
+
+                else -> {
+                    // Should never get here
+                    _setupEvent.emit(SetupEvent.HideLoadingEvent)
+                }
             }
         }
     }

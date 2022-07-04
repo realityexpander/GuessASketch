@@ -16,6 +16,7 @@ import com.realityexpander.guessasketch.databinding.FragmentSelectRoomBinding
 import com.realityexpander.guessasketch.ui.adapters.RoomAdapter
 import com.realityexpander.guessasketch.ui.setup.SetupViewModel
 import com.realityexpander.guessasketch.ui.setup.SetupViewModel.SetupEvent
+import com.realityexpander.guessasketch.ui.setup.SetupViewModel.RoomsEvent
 import com.realityexpander.guessasketch.util.Constants.SEARCH_TEXT_DEBOUNCE_DELAY_MILLIS
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
@@ -87,22 +88,19 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
 
     // Listen to the UI Events
     private fun listenToEvents() = lifecycleScope.launchWhenStarted {
-        viewModel.setupEvent.collect { event ->
-            when (event) {
-                is SetupEvent.ShowLoadingEvent -> {
-                    binding.roomsProgressBar.isVisible = true
-                }
-                is SetupEvent.HideLoadingEvent -> {
-                    binding.roomsProgressBar.isVisible = false
-                }
+        viewModel.setupEvent.collect { setupEvent ->
+            when (setupEvent) {
                 is SetupEvent.JoinRoomEvent -> {
                     findNavController().navigateSafely(
                         R.id.action_selectRoomFragment_to_drawingActivity,
                         bundleOf(
                             "playerName" to args.playerName,
-                            "roomName" to event.roomName
+                            "roomName" to setupEvent.roomName
                         )
                     )
+                }
+                is SetupEvent.JoinRoomErrorEvent -> {
+                    snackbar(setupEvent.errorMessage)
                 }
                 is SetupEvent.NavigateToCreateRoomEvent -> {
                     findNavController().navigateSafely(
@@ -112,19 +110,8 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
                         )
                     )
                 }
-                is SetupEvent.JoinRoomErrorEvent -> {
-                    snackbar(event.errorMessage)
-                }
-                is SetupEvent.GetRoomErrorEvent -> {
-                    binding.apply {
-                        roomsProgressBar.isVisible = false
-                        tvNoRoomsFound.isVisible = false
-                        ivNoRoomsFound.isVisible = false
-                    }
-                    snackbar(event.errorMessage)
-                }
                 else -> {
-                    // ignore
+                    // do nothing
                     Unit
                 }
             }
@@ -133,28 +120,34 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
 
     // Track the room list changes
     private fun subscribeToObservers() = lifecycleScope.launchWhenStarted {
-        viewModel.rooms.collect { roomEvent ->
-            when(roomEvent) {
-                is SetupEvent.ShowLoadingEvent -> {
+        viewModel.rooms.collect { roomsEvent ->
+            when(roomsEvent) {
+                is RoomsEvent.ShowLoadingEvent -> {
                     binding.roomsProgressBar.isVisible = true
                 }
-                is SetupEvent.GetRoomEvent -> {
+                is RoomsEvent.GetRoomsEvent -> {
                     binding.roomsProgressBar.isVisible = false
-                    val isEmpty = roomEvent.rooms.isEmpty()
+                    val isEmpty = roomsEvent.rooms.isEmpty()
                     binding.tvNoRoomsFound.isVisible = isEmpty
                     binding.ivNoRoomsFound.isVisible = isEmpty
 
                     lifecycleScope.launch {
-                        roomAdapter.updateDataset(roomEvent.rooms)
+                        roomAdapter.updateDataset(roomsEvent.rooms)
                     }
                 }
-                is SetupEvent.GetRoomEmptyEvent -> {
+                is RoomsEvent.GetRoomsEmptyEvent -> {
                     binding.roomsProgressBar.isVisible = false
                     roomAdapter.updateDataset(emptyList())
                     binding.tvNoRoomsFound.isVisible = true
                     binding.ivNoRoomsFound.isVisible = true
                 }
-                else -> {
+                is RoomsEvent.GetRoomsErrorEvent -> {
+                    binding.roomsProgressBar.isVisible = false
+                    binding.tvNoRoomsFound.isVisible = false
+                    binding.ivNoRoomsFound.isVisible = false
+                    snackbar(roomsEvent.errorMessage)
+                }
+                is RoomsEvent.InitialState -> {
                     // do nothing
                     Unit
                 }
