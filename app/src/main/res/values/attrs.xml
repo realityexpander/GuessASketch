@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ColorRadioButton">
+        <attr name="buttonColor" format="color" />
+        <attr name="buttonRadius" format="float" />
+    </declare-styleable>
+
+
+<!--    format="reference" refers to another drawable resource.-->
+    <declare-styleable name="ImageRadioButton">
+        <attr name="uncheckedDrawable" format="reference" />
+        <attr name="checkedDrawable" format="reference" />
+    </declare-styleable>
+
+</resources>
