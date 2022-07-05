@@ -31,13 +31,17 @@ class ImageRadioButton @JvmOverloads constructor(
             0
         ).apply {
             try {
-                val uncheckedId = getResourceId(R.styleable.ImageRadioButton_uncheckedDrawable, 0)
-                val checkedId = getResourceId(R.styleable.ImageRadioButton_checkedDrawable, 0)
+                val uncheckedId =
+                    getResourceId(R.styleable.ImageRadioButton_uncheckedDrawable, 0)
+                val checkedId =
+                    getResourceId(R.styleable.ImageRadioButton_checkedDrawable, 0)
                 if(uncheckedId != 0) {
-                    uncheckedDrawable = VectorDrawableCompat.create(context.resources, uncheckedId, null)
+                    uncheckedDrawable =
+                        VectorDrawableCompat.create(context.resources, uncheckedId, null)
                 }
                 if(checkedId != 0) {
-                    checkedDrawable = VectorDrawableCompat.create(context.resources, checkedId, null)
+                    checkedDrawable =
+                        VectorDrawableCompat.create(context.resources, checkedId, null)
                 }
             } finally {
                 recycle()
@@ -55,7 +59,7 @@ class ImageRadioButton @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
+        // super.onDraw(canvas) // comment out to not draw the system radio button
 
         canvas?.let { canvas ->
             if(!isChecked) {

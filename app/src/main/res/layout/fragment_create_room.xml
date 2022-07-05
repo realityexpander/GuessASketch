@@ -92,7 +92,7 @@
             android:id="@+id/createRoomProgressBar"
             android:layout_width="117dp"
             android:layout_height="92dp"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@+id/tilRoomName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.502"

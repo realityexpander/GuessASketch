@@ -17,7 +17,6 @@ class ColorRadioButton @JvmOverloads constructor(
 ) : AppCompatRadioButton(context, attrs) {
     // private lateinit var buttonColor: Int                   // cant use lateinit var for primitives...
     private var buttonColor by Delegates.notNull<Int>()   // so use Delegates.notNull to make it nullable
-
     private var buttonRadius = 25f
 
     private var viewWidth by Delegates.notNull<Int>()
@@ -45,7 +44,7 @@ class ColorRadioButton @JvmOverloads constructor(
                 style = Paint.Style.FILL
             }
             selectionPaint.apply {
-                color = buttonColor
+                color = Color.BLACK
                 style = Paint.Style.STROKE
                 strokeWidth = buttonRadius / 2
             }
@@ -68,12 +67,6 @@ class ColorRadioButton @JvmOverloads constructor(
             viewHeight / 2f,
             buttonRadius,
             buttonPaint
-        )
-        canvas.drawCircle(
-            viewWidth / 2f,
-            viewHeight / 2f,
-            buttonRadius,
-            selectionPaint
         )
 
         if(isChecked) {
