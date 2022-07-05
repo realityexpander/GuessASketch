@@ -7,6 +7,8 @@ import com.realityexpander.guessasketch.repository.SetupRepository
 import com.realityexpander.guessasketch.repository.SetupRepositoryImpl
 import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.DispatcherProvider
+import com.realityexpander.guessasketch.util.clientId
+import com.realityexpander.guessasketch.util.dataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,11 +16,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Named
 import javax.inject.Singleton
+
+const val CLIENT_ID = "clientId"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -33,12 +39,32 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(@Named(CLIENT_ID) clientId: String): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                // Add the client id to the request query params
+                val url = chain.request().url.newBuilder()
+                    .addQueryParameter(Constants.QUERY_PARAMETER_CLIENT_ID, clientId)
+                    .build()
+                val request = chain.request().newBuilder()
+                    .url(url)
+                    .build()
+
+                chain.proceed(request)
+            }
             .addInterceptor(HttpLoggingInterceptor().apply {
                 setLevel(HttpLoggingInterceptor.Level.BODY)
             })
             .build()
+    }
+
+    @Singleton
+    @Provides
+    @Named(CLIENT_ID)
+    fun provideClientId(@ApplicationContext context: Context): String {
+        return runBlocking {
+            context.dataStore.clientId()
+        }
     }
 
     @Singleton

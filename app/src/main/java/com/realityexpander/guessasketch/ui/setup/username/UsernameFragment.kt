@@ -1,4 +1,4 @@
-package com.realityexpander.guessasketch.ui.setup.fragments
+package com.realityexpander.guessasketch.ui.setup.username
 
 import android.os.Bundle
 import android.view.View
@@ -10,8 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentPlayerNameBinding
 import dagger.hilt.android.AndroidEntryPoint
-import com.realityexpander.guessasketch.ui.setup.UsernameViewModel.SetupEvent.*
-import com.realityexpander.guessasketch.ui.setup.UsernameViewModel
+import com.realityexpander.guessasketch.ui.setup.username.UsernameViewModel.SetupEvent.*
 import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.navigateSafely
@@ -52,21 +51,23 @@ class UsernameFragment: Fragment(R.layout.fragment_player_name) {
                             )
                         )
 
-//                        Buggy way - crashes when you nav to select room, back to choose username, and then back to select room again
-//                        findNavController().navigate(
-//                            UsernameFragmentDirections.actionUsernameFragmentToSelectRoomFragment(
-//                                event.playerName
-//                            )
-//                        )
+                    //    Buggy way - crashes when you nav to select room, back to choose username, and then back to select room again
+                    //    findNavController().navigate(
+                    //        UsernameFragmentDirections.actionUsernameFragmentToSelectRoomFragment(
+                    //            event.playerName
+                    //        )
+                    //    )
                     }
                     InputEmptyError -> {
                         snackbar(R.string.error_field_empty)
                     }
                     InputTooLongError -> {
-                        snackbar(R.string.error_room_name_too_long, MAX_PLAYER_NAME_LENGTH)
+                        snackbar(R.string.error_room_name_too_long,
+                            MAX_PLAYER_NAME_LENGTH)
                     }
                     InputTooShortError -> {
-                        snackbar(R.string.error_room_name_too_short, MIN_PLAYER_NAME_LENGTH)
+                        snackbar(R.string.error_room_name_too_short,
+                            MIN_PLAYER_NAME_LENGTH)
                     }
                     else -> {
                         // Do nothing

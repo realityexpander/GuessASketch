@@ -1,4 +1,4 @@
-package com.realityexpander.guessasketch.ui.setup
+package com.realityexpander.guessasketch.ui.setup.create_room
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,9 +12,7 @@ import com.realityexpander.guessasketch.util.DispatcherProvider
 import com.realityexpander.guessasketch.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

@@ -6,7 +6,7 @@
 
     <fragment
             android:id="@+id/usernameFragment"
-            android:name="com.realityexpander.guessasketch.ui.setup.fragments.UsernameFragment"
+            android:name="com.realityexpander.guessasketch.ui.setup.username.UsernameFragment"
             android:label="UsernameFragment" >
         <action
                 android:id="@+id/action_usernameFragment_to_selectRoomFragment"
@@ -14,7 +14,7 @@
     </fragment>
     <fragment
             android:id="@+id/selectRoomFragment"
-            android:name="com.realityexpander.guessasketch.ui.setup.fragments.SelectRoomFragment"
+            android:name="com.realityexpander.guessasketch.ui.setup.select_room.SelectRoomFragment"
             android:label="SelectRoomFragment" >
         <action
                 android:id="@+id/action_selectRoomFragment_to_createRoomFragment"
@@ -29,7 +29,7 @@
     </fragment>
     <fragment
             android:id="@+id/createRoomFragment"
-            android:name="com.realityexpander.guessasketch.ui.setup.fragments.CreateRoomFragment"
+            android:name="com.realityexpander.guessasketch.ui.setup.create_room.CreateRoomFragment"
             android:label="CreateRoomFragment" >
         <action
                 android:id="@+id/action_createRoomFragment_to_drawingActivity"

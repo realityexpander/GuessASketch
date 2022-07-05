@@ -1,8 +1,7 @@
-package com.realityexpander.guessasketch.ui.setup.fragments
+package com.realityexpander.guessasketch.ui.setup.create_room
 
 import android.os.Bundle
 import android.view.View
-import android.view.WindowManager
 import android.widget.ArrayAdapter
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
@@ -13,8 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentCreateRoomBinding
-import com.realityexpander.guessasketch.ui.setup.CreateRoomViewModel
-import com.realityexpander.guessasketch.ui.setup.CreateRoomViewModel.SetupEvent
+import com.realityexpander.guessasketch.ui.setup.create_room.CreateRoomViewModel.SetupEvent
 import com.realityexpander.guessasketch.util.Constants.MAX_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.navigateSafely

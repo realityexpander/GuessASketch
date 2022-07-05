@@ -13,6 +13,9 @@ object Constants {
         else
             HTTP_BASE_URL_REMOTE
 
+
+    const val QUERY_PARAMETER_CLIENT_ID = "clientId"
+
     const val MIN_PLAYER_NAME_LENGTH = 4
     const val MAX_PLAYER_NAME_LENGTH = 12
 

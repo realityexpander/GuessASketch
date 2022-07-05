@@ -1,13 +1,9 @@
-package com.realityexpander.guessasketch.ui.setup
+package com.realityexpander.guessasketch.ui.setup.select_room
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.repository.SetupRepository
-import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MAX_ROOM_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import com.realityexpander.guessasketch.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -101,7 +97,11 @@ class SelectRoomViewModel @Inject constructor(
                     _setupEvent.emit(SetupEvent.JoinRoomEvent(trimmedRoomName))
                 }
                 is Resource.Error   ->
-                    _setupEvent.emit(SetupEvent.JoinRoomErrorEvent(result.message ?: "Unknown error"))
+                    _setupEvent.emit(
+                        SetupEvent.JoinRoomErrorEvent(
+                            result.message ?: "Unknown error"
+                        )
+                    )
 
                 else -> {
                     // Should never get here

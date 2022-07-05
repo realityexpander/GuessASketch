@@ -1,4 +1,4 @@
-package com.realityexpander.guessasketch.ui.setup.fragments
+package com.realityexpander.guessasketch.ui.setup.select_room
 
 import android.os.Bundle
 import android.view.View
@@ -14,9 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentSelectRoomBinding
 import com.realityexpander.guessasketch.ui.adapters.RoomAdapter
-import com.realityexpander.guessasketch.ui.setup.SelectRoomViewModel
-import com.realityexpander.guessasketch.ui.setup.SelectRoomViewModel.SetupEvent
-import com.realityexpander.guessasketch.ui.setup.SelectRoomViewModel.RoomsEvent
+import com.realityexpander.guessasketch.ui.setup.select_room.SelectRoomViewModel.SetupEvent
+import com.realityexpander.guessasketch.ui.setup.select_room.SelectRoomViewModel.RoomsEvent
 import com.realityexpander.guessasketch.util.Constants.SEARCH_TEXT_DEBOUNCE_DELAY_MILLIS
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
@@ -115,7 +114,6 @@ class SelectRoomFragment: Fragment(R.layout.fragment_select_room) {
                 }
                 else -> {
                     // do nothing
-                    Unit
                 }
             }
         }

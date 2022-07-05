@@ -1,20 +1,14 @@
-package com.realityexpander.guessasketch.ui.setup
+package com.realityexpander.guessasketch.ui.setup.username
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.repository.SetupRepository
 import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MAX_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.DispatcherProvider
-import com.realityexpander.guessasketch.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
