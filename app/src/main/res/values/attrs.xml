@@ -5,7 +5,6 @@
         <attr name="buttonRadius" format="float" />
     </declare-styleable>
 
-
 <!--    format="reference" refers to another drawable resource.-->
     <declare-styleable name="ImageRadioButton">
         <attr name="uncheckedDrawable" format="reference" />

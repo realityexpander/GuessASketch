@@ -31,6 +31,7 @@ class ImageRadioButton @JvmOverloads constructor(
             0
         ).apply {
             try {
+                // Get the XML attributes values
                 val uncheckedId =
                     getResourceId(R.styleable.ImageRadioButton_uncheckedDrawable, 0)
                 val checkedId =
