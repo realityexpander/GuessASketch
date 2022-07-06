@@ -8,6 +8,9 @@
     </option>
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/java/com/realityexpander/guessasketch/ui/views/ColorRadioButton.kt" value="0.2324074074074074" />
+        <entry key="app/src/main/java/com/realityexpander/guessasketch/ui/views/DrawingView.kt" value="0.2324074074074074" />
+        <entry key="app/src/main/java/com/realityexpander/guessasketch/ui/views/ImageRadioButton.kt" value="0.2324074074074074" />
         <entry key="app/src/main/res/drawable-v24/doodle_shape_background.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/ic_appicon.xml" value="0.25" />
         <entry key="app/src/main/res/drawable-v24/ic_appicon2.xml" value="0.189" />
