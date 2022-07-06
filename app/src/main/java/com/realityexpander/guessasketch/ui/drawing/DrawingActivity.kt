@@ -34,12 +34,11 @@ class DrawingActivity: AppCompatActivity() {
         binding = ActivityDrawingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
-        setupNavDrawer()
-
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
             viewModel.checkRadioButton(checkedId)
         }
+
+        setupNavDrawer()
 
         subscribeToUiStateUpdates()
     }
@@ -67,7 +66,6 @@ class DrawingActivity: AppCompatActivity() {
             }
 
         })
-
     }
 
     // subscribe to updates from the view model
@@ -76,7 +74,7 @@ class DrawingActivity: AppCompatActivity() {
 
             // update the color of the paintbrush
             viewModel.selectedColorButtonId.collect { id ->
-                binding.colorGroup.check(id)
+                binding.colorGroup.check(id)  // select the correct radio button
 
                 when(id) {
                     R.id.rbRed -> selectColor(Color.RED)
