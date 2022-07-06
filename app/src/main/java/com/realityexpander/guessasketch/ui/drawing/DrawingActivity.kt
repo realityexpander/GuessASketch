@@ -2,7 +2,6 @@ package com.realityexpander.guessasketch.ui.drawing
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
@@ -12,12 +11,19 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.navArgs
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import com.realityexpander.data.models.socket.*
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
+import com.realityexpander.guessasketch.di.CLIENT_ID
 import com.realityexpander.guessasketch.util.Constants
+import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
+import javax.inject.Named
 
 @AndroidEntryPoint
 class DrawingActivity: AppCompatActivity() {
@@ -25,6 +31,11 @@ class DrawingActivity: AppCompatActivity() {
     private lateinit var binding: ActivityDrawingBinding
 
     private val viewModel: DrawingViewModel by viewModels()
+    private val args by navArgs<DrawingActivityArgs>()
+
+    @Inject
+    @Named(CLIENT_ID)
+    lateinit var clientId: String
 
     private lateinit var toggleDrawer: ActionBarDrawerToggle
     private lateinit var rvPlayers: RecyclerView
@@ -35,12 +46,20 @@ class DrawingActivity: AppCompatActivity() {
         setContentView(binding.root)
 
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
-            viewModel.checkRadioButton(checkedId)
+            viewModel.selectColorRadioButton(checkedId)
         }
 
         setupNavDrawer()
 
-        subscribeToUiStateUpdates()
+        subscribeToUiStateEvents()
+
+        listenToSocketConnectionEvents()
+        listenToSocketMessageEvents()
+
+        binding.drawingView.setOnTouchListener { v, event ->
+            println(event)
+            false
+        }
     }
 
     // Setup the drawer for the recyclerview list of players
@@ -68,11 +87,15 @@ class DrawingActivity: AppCompatActivity() {
         })
     }
 
-    // subscribe to updates from the view model
-    private fun subscribeToUiStateUpdates() {
-        lifecycleScope.launchWhenStarted {
+    // subscribe to UI state updates from the view model
+    private fun subscribeToUiStateEvents() {
+        // We have separate lifecycle scope for each UI State event, because when
+        // the coroutine is suspended, it wouldn't process events for any UI items below it.
+        // ie: If we put all UI State Events in the selectedColorButtonId scope, only when the user
+        //   taps on the color radio button would the other UI elements be processed.
 
-            // update the color of the paintbrush
+        lifecycleScope.launchWhenStarted {
+            // Color of the paintbrush
             viewModel.selectedColorButtonId.collect { id ->
                 binding.colorGroup.check(id)  // select the correct radio button
 
@@ -93,6 +116,82 @@ class DrawingActivity: AppCompatActivity() {
                 }
             }
         }
+
+        // Connection Progress Bar
+        lifecycleScope.launchWhenStarted {
+            viewModel.connectionProgressBarVisible.collect { isVisible ->
+                binding.connectionProgressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
+            }
+        }
+
+        // Choose Word Overlay visibility
+        lifecycleScope.launchWhenStarted {
+            // Connection Progress Bar
+            viewModel.chooseWordOverlayVisible.collect { isVisible ->
+                binding.chooseWordOverlay.visibility = if (isVisible) View.VISIBLE else View.GONE
+            }
+        }
+    }
+
+    private fun listenToSocketMessageEvents() {
+        lifecycleScope.launchWhenStarted {
+            viewModel.socketMessageEvent.collect { message ->
+
+                when(message) {
+                    is DrawData -> {
+                        message.color
+                    }
+                    is DrawAction -> {
+                        message.action
+                    }
+                    is GameError -> {
+                        when(message.errorType) {
+                            GameError.ERROR_TYPE_ROOM_NOT_FOUND -> {
+                                showSnackbar("Room not found - please try again, ${message.errorMessage}")
+                                finish()
+                            }
+                        }
+                    }
+                    is Announcement -> {
+                        showSnackbar("${message.message} - ${message.announcementType}")
+                    }
+                    else -> {
+                        println("Unknown/Unexpected message type: ${message.type}")
+                    }
+                }
+
+            }
+        }
+    }
+
+    private fun listenToSocketConnectionEvents() = lifecycleScope.launchWhenStarted {
+        viewModel.socketConnectionEvent.collect  { event ->
+            when(event) {
+                is WebSocket.Event.OnConnectionOpened<*> -> {
+                    viewModel.sendMessage(
+                        // JoinRoomHandshake(args.playerName, args.roomName, dataStore.clientId()) // can also grab clientId directly
+                        JoinRoomHandshake(args.playerName, args.roomName, clientId)
+                    )
+                    viewModel.setConnectionProgressBarVisible(false)
+                }
+                is WebSocket.Event.OnConnectionClosed -> {
+                    viewModel.setConnectionProgressBarVisible(false)
+                }
+                is WebSocket.Event.OnConnectionFailed -> {
+                    viewModel.setConnectionProgressBarVisible(false)
+                    showSnackbar(getString(R.string.connection_failed))
+
+                    event.throwable.printStackTrace()
+                }
+                else -> {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     private fun selectColor(color: Int) {

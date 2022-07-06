@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface DrawingApi {
 
     @Receive
-    fun observeEvents(): Flow<WebSocket.Event>
+    fun observeSocketEvents(): Flow<WebSocket.Event>
 
     @Send
     fun sendBaseMessage(baseModel: BaseMessageType): Boolean  // true if successful // sendBaseModel todo remove at end

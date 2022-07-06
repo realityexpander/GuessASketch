@@ -50,4 +50,5 @@
     <string name="listening">Listening...</string>
     <string name="error_unknown">Unknown Error</string>
     <string name="create">Create</string>
+    <string name="connection_failed">Connection to server failed.</string>
 </resources>
