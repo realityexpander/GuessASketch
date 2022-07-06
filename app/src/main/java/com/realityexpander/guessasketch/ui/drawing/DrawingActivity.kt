@@ -2,7 +2,6 @@ package com.realityexpander.guessasketch.ui.drawing
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -35,17 +34,19 @@ class DrawingActivity: AppCompatActivity() {
     // subscribe to updates from the view model
     private fun subscribeToUiStateUpdates() {
         lifecycleScope.launchWhenStarted {
+
+            // update the color of the paintbrush
             viewModel.selectedColorButtonId.collect { id ->
                 binding.colorGroup.check(id)
 
-                // update the color of the paintbrush
                 when(id) {
                     R.id.rbRed -> selectColor(Color.RED)
                     R.id.rbBlue -> selectColor(Color.BLUE)
                     R.id.rbGreen -> selectColor(Color.GREEN)
                     R.id.rbYellow -> selectColor(Color.YELLOW)
                     R.id.rbOrange -> selectColor(
-                        ContextCompat.getColor(this@DrawingActivity, android.R.color.holo_orange_dark)
+                        ContextCompat.getColor(this@DrawingActivity,
+                            android.R.color.holo_orange_dark)
                     )
                     R.id.rbBlack -> selectColor(Color.BLACK)
                     R.id.rbEraser -> {
