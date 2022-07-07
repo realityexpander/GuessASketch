@@ -27,7 +27,7 @@ class DrawingViewModel @Inject constructor(
     //////////////////////////////
     // UI State Events
 
-    // Currently selected radio button
+    // Currently selected radio button (color & erase)
     private val _selectedColorButtonId = MutableStateFlow(R.id.rbBlack)
     val selectedColorButtonId: StateFlow<Int> = _selectedColorButtonId
 
@@ -44,17 +44,14 @@ class DrawingViewModel @Inject constructor(
     //////////////////////////////
     // WebSocket events
 
-//    sealed class SocketMessageEvent {
-        data class MessageEvent<T: BaseMessageType>(val data: T, val type: String) //: SocketMessageEvent()
-        //object UndoEvent : SocketEvent()
-//    }
+    // Can use this to wrap the websocket messagesTypes with more data (if necessary)
+    data class MessageEvent<T: BaseMessageType>(val data: T, val type: String) //: SocketMessageEvent()
 
+    // Socket connection events
     private val _socketConnectionEventChannel = Channel<WebSocket.Event>()
     val socketConnectionEvent = _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
-    // private val _socketMessageEventChannel = Channel<SocketMessageEvent>()
-    // private val _socketMessageEventChannel = Channel<Event<*>>()
-//    private val _socketMessageEventChannel = Channel<Event<BaseMessageType>>()
+    // Socket message events
     private val _socketMessageEventChannel = Channel<BaseMessageType>()
     val socketMessageEvent = _socketMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
@@ -90,6 +87,7 @@ class DrawingViewModel @Inject constructor(
         viewModelScope.launch(dispatcher.io) {
             drawingApi.observeBaseMessage().collect { message ->
 
+                // Filter messages to be sent to the activity or handled here in the viewModel
                 when(message) {
                     is DrawData,
                     is DrawAction,
@@ -107,25 +105,6 @@ class DrawingViewModel @Inject constructor(
 
                 }
 
-//                when (val messageType = message.type) {
-//                    TYPE_DRAW_DATA,
-//                    TYPE_DRAW_ACTION,
-//                    TYPE_ANNOUNCEMENT,
-//                    TYPE_GAME_ERROR -> {
-//                        // _socketMessageEventChannel.send(SocketMessageEvent.Event(message, messageType))
-//                        // _socketMessageEventChannel.send(Event(message, messageType))
-//                        _socketMessageEventChannel.send(message)
-//                    }
-//                    TYPE_PING -> {
-//                        sendMessage(Ping())
-//                    }
-//                    else -> {
-//                        // _socketMessageEventChannel.send(SocketMessageEvent.Event(message, "UNEXPECTED_MESSAGE_TYPE"))
-//                        // _socketMessageEventChannel.send(Event(message, "UNEXPECTED_MESSAGE_TYPE"))
-//                        // _socketMessageEventChannel.send(object: BaseMessageType(type = "UNEXPECTED_MESSAGE_TYPE"){})
-//                        _socketMessageEventChannel.send(object: BaseMessageType(messageType){})
-//                    }
-//                }
             }
         }
     }

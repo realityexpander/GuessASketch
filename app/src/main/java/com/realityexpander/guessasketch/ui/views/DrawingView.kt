@@ -64,30 +64,16 @@ class DrawingView @JvmOverloads constructor(
     private var path = Path()
     private var paths = Stack<PathData>()
 
-    // Called when the Stack of Paths has changed
+    // Called when the Stack of Paths has changed (ie: from the server from another player)
     private var pathDataChangedListener: ( (Stack<PathData>) -> Unit)? = null
     fun setPathDataChangedListener(listener: ( (Stack<PathData>) -> Unit) ) {
         pathDataChangedListener = listener
     }
 
-//    // Should these be in the host activity and not this view?
-//    var roomName: String? = null
-//    var isUserDrawing = false
-//        set(value) {
-//            field = value
-//            isEnabled = value  // true == view is drawable by the current user
-//        }
-//
-//    // Called when the user does drawing actions
-//    private var onDrawListener: ((DrawData) -> Unit)? = null
-//    fun setOnDrawListener(listener: ((DrawData) -> Unit)) {
-//        onDrawListener = listener
-//    }
-
     @SuppressLint("ClickableViewAccessibility")  // for onTouchEvent not implementing performClick()
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return false
-        if(!isEnabled) return false
+        if(!isEnabled) return false  // view is enabled only for the drawing player
 
         val newX = event.x
         val newY = event.y
@@ -184,27 +170,6 @@ class DrawingView @JvmOverloads constructor(
 
         invalidate()
     }
-
-// Handled in the host activity now, todo remove this
-//    private fun createdDrawData(
-//        fromX: Float,
-//        fromY: Float,
-//        toX: Float,
-//        toY: Float,
-//        motionEvent: Int
-//    ): DrawData {
-//        return DrawData(
-//            roomName = roomName ?: throw IllegalStateException("Room name is null"),
-//            color = paint.color,
-//            strokeWidth = paint.strokeWidth,
-//            fromX = fromX,
-//            fromY = fromY,
-//            toX = toX,
-//            toY = toY,
-//            motionEvent = motionEvent
-//        )
-//    }
-
 
 }
 

@@ -238,24 +238,21 @@ class DrawingActivity: AppCompatActivity() {
     private fun setupDrawingViewTouchListenerToSendDrawDataToServer() {
 
         fun createDrawData(
-            fromX: Float,
-            fromY: Float,
-            toX: Float,
-            toY: Float,
+            fromX: Float, fromY: Float,
+            toX: Float,   toY: Float,
             motionEvent: Int
         ): DrawData {
             return DrawData(
                 roomName = args.roomName ?: throw IllegalStateException("Room name is null"),
                 color = binding.drawingView.getColor(),
                 strokeWidth = binding.drawingView.getStrokeWidth(),
-                fromX = fromX,
-                fromY = fromY,
-                toX = toX,
-                toY = toY,
+                fromX = fromX, fromY = fromY,
+                toX = toX,     toY = toY,
                 motionEvent = motionEvent
             )
         }
 
+        // Listen to the touch events and send them to the server via sockets
         binding.drawingView.setOnTouchListener { view, event ->
             println("isEnabled=${binding.drawingView.isEnabled}, $event")
             val drawView = view as DrawingView
@@ -264,10 +261,8 @@ class DrawingActivity: AppCompatActivity() {
                 MotionEvent.ACTION_DOWN -> {
                     viewModel.sendMessage(
                         createDrawData(
-                            event.x,
-                            event.y,
-                            event.x,
-                            event.y,
+                            event.x, event.y,
+                            event.x, event.y,
                             DRAW_DATA_MOTION_EVENT_ACTION_DOWN
                         )
                     )
@@ -275,10 +270,8 @@ class DrawingActivity: AppCompatActivity() {
                 MotionEvent.ACTION_MOVE -> {
                     viewModel.sendMessage(
                         createDrawData(
-                            drawView.getCurrentX(),
-                            drawView.getCurrentY(),
-                            event.x,
-                            event.y,
+                            drawView.getCurrentX(), drawView.getCurrentY(),
+                            event.x, event.y,
                             DRAW_DATA_MOTION_EVENT_ACTION_MOVE
                         )
                     )
@@ -286,10 +279,8 @@ class DrawingActivity: AppCompatActivity() {
                 MotionEvent.ACTION_UP -> {
                     viewModel.sendMessage(
                         createDrawData(
-                            drawView.getCurrentX(),
-                            drawView.getCurrentY(),
-                            drawView.getCurrentX(),
-                            drawView.getCurrentY(),
+                            drawView.getCurrentX(), drawView.getCurrentY(),
+                            drawView.getCurrentX(), drawView.getCurrentY(),
                             DRAW_DATA_MOTION_EVENT_ACTION_UP
                         )
                     )
