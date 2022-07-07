@@ -84,12 +84,18 @@ class CreateRoomFragment: Fragment(R.layout.fragment_create_room) {
                         binding. createRoomProgressBar.isVisible = false
                         snackbar(setupEvent.errorMessage)
                     }
-                    SetupEvent.InputEmptyError ->
+                    SetupEvent.InputEmptyError -> {
+                        binding.createRoomProgressBar.isVisible = false
                         snackbar(getString(R.string.error_field_empty))
-                    SetupEvent.InputTooLongError ->
+                    }
+                    SetupEvent.InputTooLongError -> {
+                        binding.createRoomProgressBar.isVisible = false
                         snackbar(R.string.error_room_name_too_long, MAX_ROOM_NAME_LENGTH)
-                    SetupEvent.InputTooShortError ->
+                    }
+                    SetupEvent.InputTooShortError -> {
+                        binding.createRoomProgressBar.isVisible = false
                         snackbar(R.string.error_room_name_too_short, MIN_ROOM_NAME_LENGTH)
+                    }
                     SetupEvent.HideLoadingEvent ->
                         binding.createRoomProgressBar.isVisible = false
                     else -> {

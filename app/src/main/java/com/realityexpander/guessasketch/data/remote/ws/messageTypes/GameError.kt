@@ -1,6 +1,6 @@
-package com.realityexpander.data.models.socket
+package com.realityexpander.guessasketch.data.remote.ws.messageTypes
 
-import com.realityexpander.data.models.socket.SocketMessageType.TYPE_GAME_ERROR
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessageType.TYPE_GAME_ERROR
 
 data class GameError(
     val errorType: Int,

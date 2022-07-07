@@ -1,6 +1,6 @@
 package com.realityexpander.guessasketch.data.remote.ws
 
-import com.realityexpander.data.models.socket.BaseMessageType
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.BaseMessageType
 import com.tinder.scarlet.WebSocket
 import com.tinder.scarlet.ws.Receive
 import com.tinder.scarlet.ws.Send

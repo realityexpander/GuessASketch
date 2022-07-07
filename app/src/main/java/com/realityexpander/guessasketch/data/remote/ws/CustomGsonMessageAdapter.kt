@@ -2,8 +2,8 @@ package com.realityexpander.guessasketch.data.remote.ws
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
-import com.realityexpander.data.models.socket.BaseMessageType
-import com.realityexpander.data.models.socket.SocketMessageType
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.BaseMessageType
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessageType
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.MessageAdapter
 import java.lang.reflect.Type

@@ -1,4 +1,4 @@
-package com.realityexpander.data.models.socket
+package com.realityexpander.guessasketch.data.remote.ws.messageTypes
 
 data class PlayerData(
     val playerName: String,

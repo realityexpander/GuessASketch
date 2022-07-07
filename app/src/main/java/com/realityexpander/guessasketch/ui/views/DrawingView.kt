@@ -1,5 +1,6 @@
 package com.realityexpander.guessasketch.ui.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
@@ -34,24 +35,56 @@ class DrawingView @JvmOverloads constructor(
         strokeWidth = Constants.DEFAULT_PAINT_STROKE_WIDTH
     }
 
-    fun setThickness(thickness: Float) {
+    fun setStrokeWidth(thickness: Float) {
         paint.strokeWidth = thickness
+    }
+
+    fun getStrokeWidth(): Float {
+        return paint.strokeWidth
     }
 
     fun setColor(color: Int) {
         paint.color = color
     }
 
+    fun getColor(): Int {
+        return paint.color
+    }
+
+    fun getCurrentX(): Float {
+        return curX!!
+    }
+
+    fun getCurrentY(): Float {
+        return curY!!
+    }
+
     data class PathData(val path: Path, val color: Int, val thickness: Float)
 
     private var path = Path()
     private var paths = Stack<PathData>()
-    private var pathDataChangedListener: ( (Stack<PathData>) -> Unit)? = null
 
+    // Called when the Stack of Paths has changed
+    private var pathDataChangedListener: ( (Stack<PathData>) -> Unit)? = null
     fun setPathDataChangedListener(listener: ( (Stack<PathData>) -> Unit) ) {
         pathDataChangedListener = listener
     }
 
+//    // Should these be in the host activity and not this view?
+//    var roomName: String? = null
+//    var isUserDrawing = false
+//        set(value) {
+//            field = value
+//            isEnabled = value  // true == view is drawable by the current user
+//        }
+//
+//    // Called when the user does drawing actions
+//    private var onDrawListener: ((DrawData) -> Unit)? = null
+//    fun setOnDrawListener(listener: ((DrawData) -> Unit)) {
+//        onDrawListener = listener
+//    }
+
+    @SuppressLint("ClickableViewAccessibility")  // for onTouchEvent not implementing performClick()
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return false
         if(!isEnabled) return false
@@ -151,6 +184,27 @@ class DrawingView @JvmOverloads constructor(
 
         invalidate()
     }
+
+// Handled in the host activity now, todo remove this
+//    private fun createdDrawData(
+//        fromX: Float,
+//        fromY: Float,
+//        toX: Float,
+//        toY: Float,
+//        motionEvent: Int
+//    ): DrawData {
+//        return DrawData(
+//            roomName = roomName ?: throw IllegalStateException("Room name is null"),
+//            color = paint.color,
+//            strokeWidth = paint.strokeWidth,
+//            fromX = fromX,
+//            fromY = fromY,
+//            toX = toX,
+//            toY = toY,
+//            motionEvent = motionEvent
+//        )
+//    }
+
 
 }
 

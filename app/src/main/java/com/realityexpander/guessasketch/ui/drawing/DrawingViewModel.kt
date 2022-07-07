@@ -1,17 +1,11 @@
 package com.realityexpander.guessasketch.ui.drawing
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.realityexpander.data.models.socket.*
-import com.realityexpander.data.models.socket.SocketMessageType.TYPE_ANNOUNCEMENT
-import com.realityexpander.data.models.socket.SocketMessageType.TYPE_DRAW_ACTION
-import com.realityexpander.data.models.socket.SocketMessageType.TYPE_DRAW_DATA
-import com.realityexpander.data.models.socket.SocketMessageType.TYPE_GAME_ERROR
-import com.realityexpander.data.models.socket.SocketMessageType.TYPE_PING
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.data.remote.ws.DrawingApi
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +21,8 @@ class DrawingViewModel @Inject constructor(
     private val dispatcher: DispatcherProvider,
     private val gson: Gson
 ): ViewModel() {
+
+    lateinit var playerName: String
 
     //////////////////////////////
     // UI State Events
@@ -49,7 +45,7 @@ class DrawingViewModel @Inject constructor(
     // WebSocket events
 
 //    sealed class SocketMessageEvent {
-        data class Event<T:BaseMessageType>(val data: T, val type: String) //: SocketMessageEvent()
+        data class MessageEvent<T: BaseMessageType>(val data: T, val type: String) //: SocketMessageEvent()
         //object UndoEvent : SocketEvent()
 //    }
 
@@ -102,7 +98,7 @@ class DrawingViewModel @Inject constructor(
                         _socketMessageEventChannel.send(message)
                     }
                     is Ping -> {
-                        sendMessage(Ping())
+                        sendMessage(Ping(playerName))
                     }
                     else -> {
                         _socketMessageEventChannel.send(object: BaseMessageType(message.type){})

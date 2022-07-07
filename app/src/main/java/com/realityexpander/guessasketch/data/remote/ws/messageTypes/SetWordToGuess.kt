@@ -1,6 +1,6 @@
-package com.realityexpander.data.models.socket
+package com.realityexpander.guessasketch.data.remote.ws.messageTypes
 
-import com.realityexpander.data.models.socket.SocketMessageType.TYPE_SET_WORD_TO_GUESS
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessageType.TYPE_SET_WORD_TO_GUESS
 
 data class SetWordToGuess(
     val wordToGuess: String,

@@ -1,8 +1,10 @@
 package com.realityexpander.guessasketch.ui.drawing
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -14,10 +16,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.navArgs
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.realityexpander.data.models.socket.*
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_UNDO
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_DOWN
 import com.realityexpander.guessasketch.R
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_DRAW
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_ERASE
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_MOVE
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_UP
 import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
 import com.realityexpander.guessasketch.di.CLIENT_ID
+import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,10 +65,9 @@ class DrawingActivity: AppCompatActivity() {
         listenToSocketConnectionEvents()
         listenToSocketMessageEvents()
 
-        binding.drawingView.setOnTouchListener { v, event ->
-            println(event)
-            false
-        }
+        setupDrawingViewTouchListenerToSendDrawDataToServer()
+
+        viewModel.playerName = args.playerName
     }
 
     // Setup the drawer for the recyclerview list of players
@@ -111,7 +119,7 @@ class DrawingActivity: AppCompatActivity() {
                     R.id.rbBlack -> selectColor(Color.BLACK)
                     R.id.rbEraser -> {
                         selectColor(Color.WHITE)
-                        binding.drawingView.setThickness(40f)
+                        binding.drawingView.setStrokeWidth(40f)
                     }
                 }
             }
@@ -139,10 +147,27 @@ class DrawingActivity: AppCompatActivity() {
 
                 when(message) {
                     is DrawData -> {
-                        message.color
+                        when(message.motionEvent) {
+                            DRAW_DATA_MOTION_EVENT_ACTION_DOWN -> {
+                                //binding.drawingView.startDrawing(message.x, message.y)
+                            }
+                            DRAW_DATA_MOTION_EVENT_ACTION_MOVE -> {
+
+                            }
+                            DRAW_DATA_MOTION_EVENT_ACTION_UP-> {
+
+                            }
+                            else -> {
+                                //binding.drawingView.draw(message.x, message.y)
+                            }
+                        }
                     }
                     is DrawAction -> {
-                        message.action
+                        when(message.action) {
+                            DRAW_ACTION_UNDO -> {} //binding.drawingView.undo()
+                            DRAW_ACTION_DRAW -> {} //binding.drawingView.undo()
+                            DRAW_ACTION_ERASE -> {} //binding.drawingView.undo()
+                        }
                     }
                     is GameError -> {
                         when(message.errorType) {
@@ -198,7 +223,7 @@ class DrawingActivity: AppCompatActivity() {
         binding.drawingView.setColor(color)
 
         // in case user has just used the eraser
-        binding.drawingView.setThickness(Constants.DEFAULT_PAINT_STROKE_WIDTH)
+        binding.drawingView.setStrokeWidth(Constants.DEFAULT_PAINT_STROKE_WIDTH)
     }
 
     // For ActionBarDrawer
@@ -209,4 +234,106 @@ class DrawingActivity: AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    @SuppressLint("ClickableViewAccessibility")  // for onTouchListener not implementing performClick()
+    private fun setupDrawingViewTouchListenerToSendDrawDataToServer() {
+
+        fun createDrawData(
+            fromX: Float,
+            fromY: Float,
+            toX: Float,
+            toY: Float,
+            motionEvent: Int
+        ): DrawData {
+            return DrawData(
+                roomName = args.roomName ?: throw IllegalStateException("Room name is null"),
+                color = binding.drawingView.getColor(),
+                strokeWidth = binding.drawingView.getStrokeWidth(),
+                fromX = fromX,
+                fromY = fromY,
+                toX = toX,
+                toY = toY,
+                motionEvent = motionEvent
+            )
+        }
+
+        binding.drawingView.setOnTouchListener { view, event ->
+            println("isEnabled=${binding.drawingView.isEnabled}, $event")
+            val drawView = view as DrawingView
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    viewModel.sendMessage(
+                        createDrawData(
+                            event.x,
+                            event.y,
+                            event.x,
+                            event.y,
+                            DRAW_DATA_MOTION_EVENT_ACTION_DOWN
+                        )
+                    )
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    viewModel.sendMessage(
+                        createDrawData(
+                            drawView.getCurrentX(),
+                            drawView.getCurrentY(),
+                            event.x,
+                            event.y,
+                            DRAW_DATA_MOTION_EVENT_ACTION_MOVE
+                        )
+                    )
+                }
+                MotionEvent.ACTION_UP -> {
+                    viewModel.sendMessage(
+                        createDrawData(
+                            drawView.getCurrentX(),
+                            drawView.getCurrentY(),
+                            drawView.getCurrentX(),
+                            drawView.getCurrentY(),
+                            DRAW_DATA_MOTION_EVENT_ACTION_UP
+                        )
+                    )
+                }
+            }
+
+            false
+        }
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
