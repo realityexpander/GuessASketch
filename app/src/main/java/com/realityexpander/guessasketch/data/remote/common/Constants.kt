@@ -5,7 +5,7 @@ object Constants {
     private const val USE_LOCALHOST = true
 
     ////////////////////////////////////////////////
-    // Rest API
+    // Rest SketchServer API
     ////////////////////////////////////////////////
 
     private const val HTTP_BASE_URL_REMOTE = "https://82.180.173.232/" // switch out for server ip
@@ -21,7 +21,7 @@ object Constants {
 
 
     ////////////////////////////////////////////////
-    // Websockets API
+    // Websockets Drawing API
     ////////////////////////////////////////////////
 
     private const val WS_BASE_URL_REMOTE = "ws://82.180.173.232/ws/draw"

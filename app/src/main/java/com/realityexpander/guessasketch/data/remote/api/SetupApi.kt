@@ -1,7 +1,7 @@
 package com.realityexpander.guessasketch.data.remote.api
 
-import com.realityexpander.guessasketch.data.remote.responses.BasicApiResponse
-import com.realityexpander.guessasketch.data.remote.responses.BasicApiResponseWithData
+import com.realityexpander.guessasketch.data.remote.api.responses.BasicResponse
+import com.realityexpander.guessasketch.data.remote.api.responses.BasicResponseWithData
 import com.realityexpander.guessasketch.data.remote.common.Room
 import retrofit2.Response
 import retrofit2.http.Body
@@ -15,17 +15,17 @@ interface SetupApi {
     @POST("/api/createRoom")
     suspend fun createRoom(
         @Body createRoomRequest: Room
-    ): Response<BasicApiResponse>
+    ): Response<BasicResponse>
 
     @GET("/api/getRooms")
     suspend fun getRooms(
         @Query("searchQuery") searchQuery: String
-    ): Response<BasicApiResponseWithData<List<Room>>>
+    ): Response<BasicResponseWithData<List<Room>>>
 
     @GET("/api/joinRoom")
     suspend fun joinRoom(
         @Query("roomName") roomName: String,
         @Query("playerName") playerName: String
-    ): Response<BasicApiResponse>
+    ): Response<BasicResponse>
 
 }

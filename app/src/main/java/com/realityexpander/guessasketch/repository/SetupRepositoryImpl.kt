@@ -4,7 +4,7 @@ import android.content.Context
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.data.remote.api.SetupApi
 import com.realityexpander.guessasketch.data.remote.common.Room
-import com.realityexpander.guessasketch.data.remote.responses.BasicApiResponse
+import com.realityexpander.guessasketch.data.remote.api.responses.BasicResponse
 import com.realityexpander.guessasketch.util.Resource
 import com.realityexpander.guessasketch.util.checkForInternetConnection
 import javax.inject.Inject
@@ -14,7 +14,7 @@ class SetupRepositoryImpl @Inject constructor(
     private val context: Context    // for connectivity check  (dont need for tests)
 ) : SetupRepository {
 
-    override suspend fun createRoom(room: Room): Resource<BasicApiResponse> {
+    override suspend fun createRoom(room: Room): Resource<BasicResponse> {
         if (!context.checkForInternetConnection())
             return Resource.Error(context.getString(R.string.error_internet_turned_off))
 
@@ -71,7 +71,7 @@ class SetupRepositoryImpl @Inject constructor(
     override suspend fun joinRoom(
         playerName: String,
         roomName: String
-    ): Resource<BasicApiResponse> {
+    ): Resource<BasicResponse> {
         if (!context.checkForInternetConnection())
             return Resource.Error(context.getString(R.string.error_internet_turned_off))
 

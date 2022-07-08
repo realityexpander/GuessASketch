@@ -1,4 +1,4 @@
-package com.realityexpander.guessasketch.data.remote.responses
+package com.realityexpander.guessasketch.data.remote.api.responses
 
 interface BaseResponse {
     val isSuccessful: Boolean
