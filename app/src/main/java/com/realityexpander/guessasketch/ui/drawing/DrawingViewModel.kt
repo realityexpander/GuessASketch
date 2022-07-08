@@ -133,6 +133,7 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
+    // Send messages to the socket for the server to handle
     fun sendBaseMessageType(message: BaseMessageType) {
         viewModelScope.launch(dispatcher.io) {
             // println("Sending message: $message")

@@ -1,0 +1,193 @@
+package com.realityexpander.guessasketch.ui.adapters
+
+import android.graphics.Color
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import com.realityexpander.guessasketch.data.remote.common.Room
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.Announcement
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.BaseMessageType
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.ChatMessage
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.ClientId
+import com.realityexpander.guessasketch.databinding.ItemAnnouncementBinding
+import com.realityexpander.guessasketch.databinding.ItemChatMessageIncomingBinding
+import com.realityexpander.guessasketch.databinding.ItemChatMessageOutgoingBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
+
+private const val VIEW_TYPE_INCOMING_MESSAGE = 0
+private const val VIEW_TYPE_OUTGOING_MESSAGE = 1
+private const val VIEW_TYPE_ANNOUNCEMENT = 2
+
+class ChatMessageAdapter constructor(
+    private val playerName: String,
+    private val clientId: ClientId,
+):
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    class IncomingChatMessageViewHolder(val binding: ItemChatMessageIncomingBinding):
+        RecyclerView.ViewHolder(binding.root)
+
+    class OutgoingChatMessageViewHolder(val binding: ItemChatMessageOutgoingBinding):
+        RecyclerView.ViewHolder(binding.root)
+
+    class AnnouncementViewHolder(val binding: ItemAnnouncementBinding):
+        RecyclerView.ViewHolder(binding.root)
+
+    // This job must be cancelled when the adapter is destroyed to avoid memory leaks.
+    suspend fun updateDataset(newDataset: List<BaseMessageType>) = withContext(Dispatchers.Default) {
+        val diff = DiffUtil.calculateDiff(object: DiffUtil.Callback() {
+
+            override fun getOldListSize(): Int {
+                return chatItems.size
+            }
+
+            override fun getNewListSize(): Int {
+                return newDataset.size
+            }
+
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return chatItems[oldItemPosition]== newDataset[newItemPosition]
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return chatItems[oldItemPosition] == newDataset[newItemPosition]
+            }
+        })
+
+        // Update the recyclerView on the main thread
+        withContext(Dispatchers.Main) {
+            chatItems = newDataset
+            diff.dispatchUpdatesTo(this@ChatMessageAdapter)  // must happen on main thread
+        }
+    }
+
+    var chatItems = listOf<BaseMessageType>()
+        private set
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when(viewType) {
+            VIEW_TYPE_INCOMING_MESSAGE -> {
+                val binding = ItemChatMessageIncomingBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false)
+                IncomingChatMessageViewHolder(binding)
+            }
+            VIEW_TYPE_OUTGOING_MESSAGE -> {
+                val binding = ItemChatMessageOutgoingBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false)
+                OutgoingChatMessageViewHolder(binding)
+            }
+            VIEW_TYPE_ANNOUNCEMENT -> {
+                val binding = ItemAnnouncementBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false)
+                AnnouncementViewHolder(binding)
+            }
+            else -> throw IllegalArgumentException("Unknown view type")
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val chatItem = chatItems[position]
+
+        when(holder) {
+            is IncomingChatMessageViewHolder -> {
+                holder.binding.apply {
+                    (chatItem as ChatMessage).let { chatMessage ->
+                        tvMessage.text = chatMessage.message
+                        tvUsername.text = chatMessage.fromPlayerName
+                        tvTime.text = chatMessage.timestamp.toTimeString()
+                    }
+                }
+            }
+            is OutgoingChatMessageViewHolder -> {
+                holder.binding.apply {
+                    (chatItem as ChatMessage).let { chatMessage ->
+                        tvMessage.text = chatMessage.message
+                        tvUsername.text = playerName
+                        tvTime.text = chatMessage.timestamp.toTimeString()
+                    }
+                }
+            }
+            is AnnouncementViewHolder -> {
+                holder.binding.apply {
+                    (chatItem as Announcement).let { announcement ->
+                        tvAnnouncement.text = announcement.message
+                        tvAnnouncement.setTextColor(Color.BLACK)
+                        tvTime.text = announcement.timestamp.toTimeString()
+                        tvTime.setTextColor(Color.BLACK)
+
+                        when(announcement.announcementType) {
+                            Announcement.TYPE_EVERYBODY_GUESSED_CORRECTLY -> {
+                                root.setBackgroundColor(Color.LTGRAY)
+                            }
+                            Announcement.TYPE_PLAYER_GUESSED_CORRECTLY -> {
+                                root.setBackgroundColor(Color.YELLOW)
+                            }
+                            Announcement.TYPE_PLAYER_JOINED_ROOM -> {
+                                root.setBackgroundColor(Color.GREEN)
+                            }
+                            Announcement.TYPE_PLAYER_EXITED_ROOM -> {
+                                root.setBackgroundColor(Color.RED)
+                                tvAnnouncement.setTextColor(Color.WHITE)
+                            }
+                        }
+                    }
+                }
+            }
+            else -> throw IllegalArgumentException("Unknown view type")
+        }
+
+    }
+
+    override fun getItemCount(): Int {
+        return chatItems.size
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return when(chatItems[position]) {
+            is ChatMessage -> {
+                if ((chatItems[position] as ChatMessage).fromClientId == clientId) {
+                // if ((chatItems[position] as ChatMessage).fromPlayerName == playerName) {  // bad if 2 players have the same name
+                    VIEW_TYPE_OUTGOING_MESSAGE
+                } else {
+                    VIEW_TYPE_INCOMING_MESSAGE
+                }
+            }
+            is Announcement -> VIEW_TYPE_ANNOUNCEMENT
+            else -> throw IllegalArgumentException("Unknown message type")
+        }
+    }
+
+    // Function that is called when the room item is clicked.
+    private var onRoomItemClickListener: ((Room) -> Unit)? = null
+
+    fun setOnRoomItemClickListener(listener: (Room) -> Unit) {
+        onRoomItemClickListener = listener
+    }
+}
+
+fun Long.toTimeString(): String {
+    val dateTime = Date(this)
+    val format = SimpleDateFormat("HH:mm:ss", Locale.US)
+    return format.format(dateTime)
+}
+
+fun Long.toTimeDateString(): String {
+    val dateTime = Date(this)
+    val format = SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.US)
+    return format.format(dateTime)
+}
+
+fun String.toTimeDateLong(): Long {
+    val format = SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.US)
+    return format.parse(this)?.time ?: throw IllegalArgumentException("Invalid time string")
+}

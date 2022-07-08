@@ -14,6 +14,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_UNDO
@@ -26,6 +27,7 @@ import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Com
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_UP
 import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
 import com.realityexpander.guessasketch.di.CLIENT_ID
+import com.realityexpander.guessasketch.ui.adapters.ChatMessageAdapter
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
 import com.tinder.scarlet.WebSocket
@@ -34,6 +36,9 @@ import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
+
+typealias ColorInt = Int // like @ColorInt
+typealias ResId = Int // like @ResId
 
 @AndroidEntryPoint
 class DrawingActivity: AppCompatActivity() {
@@ -47,6 +52,8 @@ class DrawingActivity: AppCompatActivity() {
 
     private var curDrawingColor: Int = Color.BLACK
 
+    private lateinit var chatMessageAdapter: ChatMessageAdapter
+
     @Inject
     @Named(CLIENT_ID)
     lateinit var clientId: String
@@ -59,7 +66,9 @@ class DrawingActivity: AppCompatActivity() {
         binding = ActivityDrawingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-//        // test player is the drawing player -- remove todo
+        viewModel.playerName = args.playerName
+
+//        // "test" playerName is the drawing player - for testing -- remove todo
 //        binding.drawingView.isEnabled = args.playerName == "test"
 
         // Select the color of the drawing player's pen
@@ -80,14 +89,14 @@ class DrawingActivity: AppCompatActivity() {
         }
 
         setupNavDrawer()
+        setupChatMessageRecyclerView()
+
         subscribeToUiStateEvents()
 
         listenToSocketConnectionEvents()
         listenToSocketMessageEvents()
 
         setupDrawingViewTouchListenerToSendDrawDataToServer(binding.drawingView)
-
-        viewModel.playerName = args.playerName
     }
 
     // Setup the drawer for the recyclerview list of players
@@ -108,6 +117,7 @@ class DrawingActivity: AppCompatActivity() {
             override fun onDrawerOpened(drawerView: View) = Unit
             override fun onDrawerStateChanged(newState: Int) = Unit
 
+            // Lock the drawer so it cant be opened accidentally when drawing
             override fun onDrawerClosed(drawerView: View) {
                 binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
             }
@@ -146,7 +156,6 @@ class DrawingActivity: AppCompatActivity() {
 
         // Choose Word Overlay visibility
         lifecycleScope.launchWhenStarted {
-            // Connection Progress Bar
             viewModel.chooseWordOverlayVisible.collect { isVisible ->
                 binding.chooseWordOverlay.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
@@ -177,7 +186,6 @@ class DrawingActivity: AppCompatActivity() {
                                 )
                             }
                         }
-
                     }
                     is DrawAction -> {
                         if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player
@@ -208,6 +216,7 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
+    // Listen to socket connection events
     private fun listenToSocketConnectionEvents() = lifecycleScope.launchWhenStarted {
         viewModel.socketConnectionEvent.collect  { event ->
             when(event) {
@@ -233,6 +242,7 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
+    // Select the drawing color of the drawing view
     private fun selectColor(color: Int) {
         binding.drawingView.setColor(color)
 
@@ -299,6 +309,7 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
+    // Render the "Drawing Player" drawing from the server
     private fun renderDrawDataToDrawingView(drawData: DrawData) {
 
         // Converts DrawData from the server to DrawData mapped to the current DrawingView aspect ratio
@@ -348,7 +359,8 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
-    private fun getColorToButtonIdMap(): Map<Int, Int> {
+    //  Map of Colors to radio button IDs
+    private fun getColorToButtonIdMap(): Map<ColorInt, ResId> { // <@ColorInt, @IdRes>
         return mapOf(
               Color.RED     to R.id.rbRed,
               Color.GREEN   to R.id.rbGreen,
@@ -371,6 +383,15 @@ class DrawingActivity: AppCompatActivity() {
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun setupChatMessageRecyclerView() {
+        binding.rvChat.apply {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(this@DrawingActivity)
+            chatMessageAdapter = ChatMessageAdapter(args.playerName, clientId)
+            adapter = chatMessageAdapter
+        }
     }
 
 }
