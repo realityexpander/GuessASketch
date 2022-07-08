@@ -13,10 +13,9 @@ import com.realityexpander.guessasketch.data.remote.ws.messageTypes.ClientId
 import com.realityexpander.guessasketch.databinding.ItemAnnouncementBinding
 import com.realityexpander.guessasketch.databinding.ItemChatMessageIncomingBinding
 import com.realityexpander.guessasketch.databinding.ItemChatMessageOutgoingBinding
+import com.realityexpander.guessasketch.util.toTimeString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.*
 
 private const val VIEW_TYPE_INCOMING_MESSAGE = 0
 private const val VIEW_TYPE_OUTGOING_MESSAGE = 1
@@ -27,6 +26,9 @@ class ChatMessageAdapter constructor(
     private val clientId: ClientId,
 ):
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    var chatItems = listOf<BaseMessageType>()
+        private set
 
     class IncomingChatMessageViewHolder(val binding: ItemChatMessageIncomingBinding):
         RecyclerView.ViewHolder(binding.root)
@@ -64,9 +66,6 @@ class ChatMessageAdapter constructor(
             diff.dispatchUpdatesTo(this@ChatMessageAdapter)  // must happen on main thread
         }
     }
-
-    var chatItems = listOf<BaseMessageType>()
-        private set
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when(viewType) {
@@ -126,16 +125,16 @@ class ChatMessageAdapter constructor(
                         tvTime.setTextColor(Color.BLACK)
 
                         when(announcement.announcementType) {
-                            Announcement.TYPE_EVERYBODY_GUESSED_CORRECTLY -> {
+                            Announcement.ANNOUNCEMENT_EVERYBODY_GUESSED_CORRECTLY -> {
                                 root.setBackgroundColor(Color.LTGRAY)
                             }
-                            Announcement.TYPE_PLAYER_GUESSED_CORRECTLY -> {
+                            Announcement.ANNOUNCEMENT_PLAYER_GUESSED_CORRECTLY -> {
                                 root.setBackgroundColor(Color.YELLOW)
                             }
-                            Announcement.TYPE_PLAYER_JOINED_ROOM -> {
+                            Announcement.ANNOUNCEMENT_PLAYER_JOINED_ROOM -> {
                                 root.setBackgroundColor(Color.GREEN)
                             }
-                            Announcement.TYPE_PLAYER_EXITED_ROOM -> {
+                            Announcement.ANNOUNCEMENT_PLAYER_EXITED_ROOM -> {
                                 root.setBackgroundColor(Color.RED)
                                 tvAnnouncement.setTextColor(Color.WHITE)
                             }
@@ -173,21 +172,4 @@ class ChatMessageAdapter constructor(
     fun setOnRoomItemClickListener(listener: (Room) -> Unit) {
         onRoomItemClickListener = listener
     }
-}
-
-fun Long.toTimeString(): String {
-    val dateTime = Date(this)
-    val format = SimpleDateFormat("HH:mm:ss", Locale.US)
-    return format.format(dateTime)
-}
-
-fun Long.toTimeDateString(): String {
-    val dateTime = Date(this)
-    val format = SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.US)
-    return format.format(dateTime)
-}
-
-fun String.toTimeDateLong(): Long {
-    val format = SimpleDateFormat("HH:mm:ss dd/MM/yyyy", Locale.US)
-    return format.parse(this)?.time ?: throw IllegalArgumentException("Invalid time string")
 }
