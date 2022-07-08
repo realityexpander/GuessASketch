@@ -55,10 +55,10 @@
                 app:buttonColor="@color/orange"/>
 
             <com.realityexpander.guessasketch.ui.views.ColorRadioButton
-                android:id="@+id/rbYellow"
+                android:id="@+id/rbGray"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                app:buttonColor="@color/yellow"/>
+                app:buttonColor="@color/gray"/>
 
             <com.realityexpander.guessasketch.ui.views.ColorRadioButton
                 android:id="@+id/rbBlack"

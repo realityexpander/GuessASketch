@@ -2,13 +2,11 @@ package com.realityexpander.guessasketch.ui.drawing
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -47,6 +45,8 @@ class DrawingActivity: AppCompatActivity() {
 
     private lateinit var resourceColorToButtonIdMap: Map<Int, Int>
 
+    private var curDrawingColor: Int = Color.BLACK
+
     @Inject
     @Named(CLIENT_ID)
     lateinit var clientId: String
@@ -54,7 +54,6 @@ class DrawingActivity: AppCompatActivity() {
     private lateinit var toggleDrawer: ActionBarDrawerToggle
     private lateinit var rvPlayers: RecyclerView
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDrawingBinding.inflate(layoutInflater)
@@ -74,6 +73,7 @@ class DrawingActivity: AppCompatActivity() {
             if(binding.drawingView.isEnabled) {  // Only undo if drawing is enabled (this user is the drawing player)
                 binding.drawingView.undo()
                 viewModel.sendBaseMessageType(DrawAction(DRAW_ACTION_UNDO))
+                selectColor(curDrawingColor)  // make sure the current color is selected
             }
         }
 
@@ -124,24 +124,16 @@ class DrawingActivity: AppCompatActivity() {
 
         // Color of the paintbrush
         lifecycleScope.launchWhenStarted {
-            viewModel.selectedColorButtonId.collect { id ->
-                binding.colorGroup.check(id)  // select the correct radio button
+            viewModel.selectedColorButtonId.collect { buttonId ->
+                binding.colorGroup.check(buttonId)  // select the correct radio button
 
-                when(id) {
-                    R.id.rbRed -> selectColor(Color.RED)
-                    R.id.rbBlue -> selectColor(Color.BLUE)
-                    R.id.rbGreen -> selectColor(Color.GREEN)
-                    R.id.rbYellow -> selectColor(Color.YELLOW)
-                    R.id.rbOrange -> selectColor(
-                        ContextCompat.getColor(this@DrawingActivity,
-                            android.R.color.holo_orange_dark)
-                    )
-                    R.id.rbBlack -> selectColor(Color.BLACK)
-                    R.id.rbEraser -> {
-                        selectColor(Color.WHITE)
-                        binding.drawingView.setStrokeWidth(40f)
-                    }
-                }
+                // Set the paint color of the drawing view
+                //   ** this is a reverse search for color (key) by searching for the button id (value)
+                curDrawingColor = resourceColorToButtonIdMap.entries.firstOrNull { colorToButtonId ->
+                        colorToButtonId.value == buttonId
+                    }?.key ?: Color.BLACK
+                selectColor(curDrawingColor)
+
             }
         }
 
@@ -162,7 +154,6 @@ class DrawingActivity: AppCompatActivity() {
     }
 
     // Listen to socket messages from the server
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun listenToSocketMessageEvents() {
         lifecycleScope.launchWhenStarted {
             viewModel.socketBaseMessageEvent.collect { message ->
@@ -322,7 +313,6 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun renderDrawDataToDrawingView(drawData: DrawData) {
 
         // Converts DrawData from the server to DrawData mapped to the current DrawingView aspect ratio
@@ -372,13 +362,12 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun getColorToButtonIdMap(): Map<Int, Int> {
         return mapOf(
               Color.RED     to R.id.rbRed,
               Color.GREEN   to R.id.rbGreen,
               Color.BLUE    to R.id.rbBlue,
-              Color.YELLOW  to R.id.rbYellow,
+              Color.GRAY    to R.id.rbGray,
               ContextCompat.getColor(this, android.R.color.holo_orange_dark)
                             to R.id.rbOrange,
               Color.WHITE   to R.id.rbEraser,
