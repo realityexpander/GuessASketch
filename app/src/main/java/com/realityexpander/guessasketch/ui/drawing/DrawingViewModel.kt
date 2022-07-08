@@ -27,7 +27,7 @@ class DrawingViewModel @Inject constructor(
     //////////////////////////////
     // UI State Events
 
-    // Currently selected radio button (color & erase)
+    // Current selected "pick color" radio button
     private val _selectedColorButtonId = MutableStateFlow(R.id.rbBlack)
     val selectedColorButtonId: StateFlow<Int> = _selectedColorButtonId
 
@@ -38,7 +38,6 @@ class DrawingViewModel @Inject constructor(
     // Choose Word Overlay visibility
     private val _chooseWordOverlayVisible = MutableStateFlow(false)
     val chooseWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
-
 
 
     //////////////////////////////
@@ -52,13 +51,13 @@ class DrawingViewModel @Inject constructor(
     val socketConnectionEvent = _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     // Socket message events
-    private val _socketMessageEventChannel = Channel<BaseMessageType>()
-    val socketMessageEvent = _socketMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
+    private val _socketBaseMessageEventChannel = Channel<BaseMessageType>()
+    val socketBaseMessageEvent = _socketBaseMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     //////////////////////////////
 
     init {
-        observeSocketEvents()
+        observeSocketConnectionEvents()
         observeSocketBaseMessages()
     }
 
@@ -74,10 +73,19 @@ class DrawingViewModel @Inject constructor(
         _selectedColorButtonId.value = id
     }
 
-    private fun observeSocketEvents() {
+    private fun observeSocketConnectionEvents() {  // observeEvents - todo remove at end
         viewModelScope.launch(dispatcher.io) {
-            drawingApi.observeSocketEvents().collect { event ->
-                _socketConnectionEventChannel.send(event)
+            drawingApi.observeSocketConnectionEvents().collect { event ->
+                when(event) {
+                    is WebSocket.Event.OnConnectionOpened<*>,
+                    is WebSocket.Event.OnConnectionClosed,
+                    is WebSocket.Event.OnConnectionFailed -> {
+                        _socketConnectionEventChannel.send(event)
+                    }
+                    else -> {
+//                        Timber.d("observeSocketConnectionEvents - Unhandled socket event: $event")
+                    }
+                }
             }
         }
     }
@@ -85,7 +93,9 @@ class DrawingViewModel @Inject constructor(
     // Observe the websocket messages of BaseMessageType
     private fun observeSocketBaseMessages() {  // observeBaseModels - todo remove at end
         viewModelScope.launch(dispatcher.io) {
-            drawingApi.observeBaseMessage().collect { message ->
+            drawingApi.observeBaseMessages().collect { message ->
+
+                println("observeSocketBaseMessages - message: $message")
 
                 // Filter messages to be sent to the activity or handled here in the viewModel
                 when(message) {
@@ -93,14 +103,19 @@ class DrawingViewModel @Inject constructor(
                     is DrawAction,
                     is Announcement,
                     is GameError -> {
-                        _socketMessageEventChannel.send(message)
+                        _socketBaseMessageEventChannel.send(message)
                     }
                     is Ping -> {
-                        sendMessage(Ping(playerName))
+                        // respond with a pong
+                        sendBaseMessageType(Ping(playerName))
                     }
                     else -> {
-                        _socketMessageEventChannel.send(object: BaseMessageType(message.type){})
-                        Timber.e("DrawingViewModel - Unknown message type: ${message.javaClass.simpleName}")
+//                        _socketBaseMessageEventChannel.send(object: BaseMessageType(message.type){})
+//                        Timber.e("DrawingViewModel - Unknown message type: ${
+//                            message.javaClass.simpleName
+//                        }, ${
+//                            gson.toJson(message, message.javaClass)
+//                        }")
                     }
 
                 }
@@ -109,8 +124,9 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
-    fun sendMessage(message: BaseMessageType) {
+    fun sendBaseMessageType(message: BaseMessageType) {
         viewModelScope.launch(dispatcher.io) {
+            println("Sending message: $message")
             drawingApi.sendBaseMessage(message)
         }
     }

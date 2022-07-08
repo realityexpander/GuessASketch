@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.Flow
 interface DrawingApi {
 
     @Receive
-    fun observeSocketEvents(): Flow<WebSocket.Event>
+    fun observeSocketConnectionEvents(): Flow<WebSocket.Event>
 
     @Send
     fun sendBaseMessage(baseModel: BaseMessageType): Boolean  // true if successful // sendBaseModel todo remove at end
 
     @Receive
-    fun observeBaseMessage(): Flow<BaseMessageType>  // observeBaseModel todo remove at end
+    fun observeBaseMessages(): Flow<BaseMessageType>  // observeBaseModels todo remove at end
 }

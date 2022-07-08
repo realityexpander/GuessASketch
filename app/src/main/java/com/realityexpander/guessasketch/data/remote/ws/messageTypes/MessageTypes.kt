@@ -37,6 +37,7 @@ object SocketMessageType {
         messageTypeMap[TYPE_GAME_PHASE_UPDATE]   = GamePhaseUpdate::class.java
         messageTypeMap[TYPE_SET_WORD_TO_GUESS]   = SetWordToGuess::class.java
         messageTypeMap[TYPE_GAME_STATE]          = GameState::class.java
+        messageTypeMap[TYPE_GAME_ERROR]          = GameError::class.java
         messageTypeMap[TYPE_NEW_WORDS]           = NewWords::class.java
         messageTypeMap[TYPE_PLAYERS_LIST]        = PlayersList::class.java
         messageTypeMap[TYPE_PING]                = Ping::class.java

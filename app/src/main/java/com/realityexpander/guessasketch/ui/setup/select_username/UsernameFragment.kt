@@ -1,4 +1,4 @@
-package com.realityexpander.guessasketch.ui.setup.username
+package com.realityexpander.guessasketch.ui.setup.select_username
 
 import android.os.Bundle
 import android.view.View
@@ -10,7 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentPlayerNameBinding
 import dagger.hilt.android.AndroidEntryPoint
-import com.realityexpander.guessasketch.ui.setup.username.UsernameViewModel.SetupEvent.*
+import com.realityexpander.guessasketch.ui.setup.select_username.UsernameViewModel.SetupEvent.*
 import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.navigateSafely
@@ -68,9 +68,6 @@ class UsernameFragment: Fragment(R.layout.fragment_player_name) {
                     InputTooShortError -> {
                         snackbar(R.string.error_room_name_too_short,
                             MIN_PLAYER_NAME_LENGTH)
-                    }
-                    else -> {
-                        // Do nothing
                     }
                 }
             }

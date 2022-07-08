@@ -1,4 +1,4 @@
-package com.realityexpander.guessasketch.ui.setup.username
+package com.realityexpander.guessasketch.ui.setup.select_username
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -52,7 +52,7 @@ class UsernameViewModel @Inject constructor(
                     _setupEvent.emit(SetupEvent.InputTooShortError)
                 trimmedPlayerName.length > MAX_PLAYER_NAME_LENGTH ->
                     _setupEvent.emit(SetupEvent.InputTooLongError)
-                else -> _setupEvent.emit(SetupEvent.NavigateToSelectRoomEvent(playerName))
+                else -> _setupEvent.emit(SetupEvent.NavigateToSelectRoomEvent(trimmedPlayerName))
             }
         }
     }

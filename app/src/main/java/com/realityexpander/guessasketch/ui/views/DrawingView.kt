@@ -59,21 +59,31 @@ class DrawingView @JvmOverloads constructor(
         return curY!!
     }
 
+    fun getViewHeight(): Int {
+        return viewHeight!!
+    }
+
+    fun getViewWidth(): Int {
+        return viewWidth!!
+    }
+
+
     data class PathData(val path: Path, val color: Int, val thickness: Float)
 
     private var path = Path()
     private var paths = Stack<PathData>()
 
     // Called when the Stack of Paths has changed (ie: from the server from another player)
-    private var pathDataChangedListener: ( (Stack<PathData>) -> Unit)? = null
-    fun setPathDataChangedListener(listener: ( (Stack<PathData>) -> Unit) ) {
-        pathDataChangedListener = listener
+    private var pathDataStackChangedListener: ( (Stack<PathData>) -> Unit)? = null
+    fun setPathDataStackChangedListener(listener: ( (Stack<PathData>) -> Unit) ) {
+        pathDataStackChangedListener = listener
     }
 
+    // Respond to the user of the device drawing on the screen with finger or stylus
     @SuppressLint("ClickableViewAccessibility")  // for onTouchEvent not implementing performClick()
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return false
-        if(!isEnabled) return false  // view is enabled only for the drawing player
+        if(!isEnabled) return false  // touches are enabled only for the drawing player
 
         val newX = event.x
         val newY = event.y
@@ -82,44 +92,61 @@ class DrawingView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> startTouch(newX, newY)
             MotionEvent.ACTION_MOVE -> moveTouch(newX, newY)
             MotionEvent.ACTION_UP -> stopTouch()
-            MotionEvent.ACTION_CANCEL -> isDrawing = false
+            //MotionEvent.ACTION_CANCEL -> stopTouch() //isDrawing = false
         }
 
         return true
     }
 
+    // Called when inflating the view from XML, and on config changes
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+
         viewWidth = w
         viewHeight = h
         bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bmp!!)
-        canvas?.drawColor(Color.WHITE)
+        canvas?.drawColor(Color.WHITE)  // fill the canvas with white (very poor naming of the method!!!)
     }
 
     // Called many times per second
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+
+        // Save the current drawing paint options
         val initialColor = paint.color
         val initialThickness = paint.strokeWidth
 
+        // Fresh canvas
+        if (paths.size == 0 && !isDrawing) {
+            canvas?.drawColor(Color.WHITE)
+           return
+        }
+
         // Draw the previous paths
-        for(pathData in paths) {
+        for(prevPath in paths) {
             paint.apply {
-                color = pathData.color
-                strokeWidth = pathData.thickness
-                canvas?.drawPath(pathData.path, paint)
+                color = prevPath.color
+                strokeWidth = prevPath.thickness
+                //canvas?.drawPath(pathData.path, paint)
             }
-            canvas?.drawPath(pathData.path, paint)
+            canvas?.drawPath(prevPath.path, paint)
         }
 
         // Draw the current path the player is drawing (active path)
-        paint.apply {
-            color = initialColor
-            strokeWidth = initialThickness
+        if (isDrawing) {
+            paint.apply {
+                color = initialColor
+                strokeWidth = initialThickness
+            }
+            canvas?.drawPath(path, paint)
         }
-        canvas?.drawPath(path, paint)
+
     }
+
+    //// DRAWING METHODS ////
+
+    var isStarted = false  // fixes Android bug where ACTION_MOVE is called after ACTION_UP
 
     private fun startTouch(x: Float, y: Float) {
         path = Path()  // Start a new path at the current point
@@ -128,10 +155,13 @@ class DrawingView @JvmOverloads constructor(
         curX = x
         curY = y
 
+        isStarted = true
         invalidate() // trigger onDraw()
     }
 
     private fun moveTouch(toX: Float, toY: Float) {
+        if(!isStarted) return
+
         val currX = curX ?: return
         val currY = curY ?: return
 
@@ -153,23 +183,78 @@ class DrawingView @JvmOverloads constructor(
         curX ?: return
         curY ?: return
 
-        isDrawing = false
         path.lineTo(curX!!, curY!!)
+        path.setLastPoint(curX!!, curY!!)
 
+        // Add the path to the stack
         paths.push(PathData(path, paint.color, paint.strokeWidth))
-        pathDataChangedListener?.let { pathDataChanged ->
+        pathDataStackChangedListener?.let { pathDataChanged ->
             pathDataChanged(paths)
         }
 
+        isDrawing = false
+        isStarted = false
         invalidate()
     }
 
     fun clearDrawing() {
         canvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY)
         paths.clear()
+        path.reset()
 
         invalidate()
     }
+
+    // Changing the enabled state of the view clears the drawing & path
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+
+        clearDrawing()
+    }
+
+    fun undo() {
+        if(paths.isNotEmpty()) {
+            paths.pop()
+            pathDataStackChangedListener?.let { pathDataStackChanged ->
+                pathDataStackChanged(paths)
+            }
+        }
+
+        invalidate()
+    }
+
+    //// RESPOND TO THE SERVER SENDING A NEW PATH TO DRAW ////
+
+    private var startedTouchExternally = false
+
+    fun startTouchExternally(fromX: Float, fromY: Float, color: Int, strokeWidth: Float) {
+        startedTouchExternally = true
+
+        paint.color = color
+        paint.strokeWidth = strokeWidth
+        startTouch(fromX, fromY)
+    }
+
+    fun moveTouchExternally(toX: Float, toY: Float, color: Int, strokeWidth: Float) {
+
+        // Prevents a bug if startTouchExternally() is NOT called before moveTouchExternally()
+        if (!startedTouchExternally) {
+            startTouchExternally(toX, toY, color, strokeWidth)
+            startedTouchExternally = true
+        }
+
+        paint.color = color
+        paint.strokeWidth = strokeWidth
+        moveTouch(toX, toY)
+    }
+
+    fun stopTouchExternally() {
+
+        stopTouch()
+
+        startedTouchExternally = false
+    }
+
 
 }
 

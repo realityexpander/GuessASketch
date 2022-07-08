@@ -2,11 +2,13 @@ package com.realityexpander.guessasketch.ui.drawing
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -31,6 +33,7 @@ import com.realityexpander.guessasketch.util.Constants
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -42,6 +45,8 @@ class DrawingActivity: AppCompatActivity() {
     private val viewModel: DrawingViewModel by viewModels()
     private val args by navArgs<DrawingActivityArgs>()
 
+    private lateinit var resourceColorToButtonIdMap: Map<Int, Int>
+
     @Inject
     @Named(CLIENT_ID)
     lateinit var clientId: String
@@ -49,25 +54,40 @@ class DrawingActivity: AppCompatActivity() {
     private lateinit var toggleDrawer: ActionBarDrawerToggle
     private lateinit var rvPlayers: RecyclerView
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDrawingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // test player is the drawing player -- remove todo
+        binding.drawingView.isEnabled = args.playerName == "test"
+
+        // Select the color of the drawing player's pen
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
             viewModel.selectColorRadioButton(checkedId)
         }
+        resourceColorToButtonIdMap = getColorToButtonIdMap()
+
+        // Undo (only available to drawing player)
+        binding.ibUndo.setOnClickListener {
+            if(binding.drawingView.isEnabled) {  // Only undo if drawing is enabled (this user is the drawing player)
+                binding.drawingView.undo()
+                viewModel.sendBaseMessageType(DrawAction(DRAW_ACTION_UNDO))
+            }
+        }
 
         setupNavDrawer()
-
         subscribeToUiStateEvents()
 
         listenToSocketConnectionEvents()
         listenToSocketMessageEvents()
 
-        setupDrawingViewTouchListenerToSendDrawDataToServer()
+        setupDrawingViewTouchListenerToSendDrawDataToServer(binding.drawingView)
 
         viewModel.playerName = args.playerName
+
+
     }
 
     // Setup the drawer for the recyclerview list of players
@@ -102,8 +122,8 @@ class DrawingActivity: AppCompatActivity() {
         // ie: If we put all UI State Events in the selectedColorButtonId scope, only when the user
         //   taps on the color radio button would the other UI elements be processed.
 
+        // Color of the paintbrush
         lifecycleScope.launchWhenStarted {
-            // Color of the paintbrush
             viewModel.selectedColorButtonId.collect { id ->
                 binding.colorGroup.check(id)  // select the correct radio button
 
@@ -141,30 +161,38 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
+    // Listen to socket messages from the server
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun listenToSocketMessageEvents() {
         lifecycleScope.launchWhenStarted {
-            viewModel.socketMessageEvent.collect { message ->
+            viewModel.socketBaseMessageEvent.collect { message ->
 
                 when(message) {
                     is DrawData -> {
-                        when(message.motionEvent) {
-                            DRAW_DATA_MOTION_EVENT_ACTION_DOWN -> {
-                                //binding.drawingView.startDrawing(message.x, message.y)
-                            }
-                            DRAW_DATA_MOTION_EVENT_ACTION_MOVE -> {
+                        // only draw server data if this user is NOT the drawing player
+                        if(binding.drawingView.isEnabled) return@collect
 
-                            }
-                            DRAW_DATA_MOTION_EVENT_ACTION_UP-> {
-
+                        when (message.motionEvent) {
+                            DRAW_DATA_MOTION_EVENT_ACTION_DOWN,
+                            DRAW_DATA_MOTION_EVENT_ACTION_MOVE,
+                            DRAW_DATA_MOTION_EVENT_ACTION_UP -> {
+                                renderDrawDataToDrawingView(message)
                             }
                             else -> {
-                                //binding.drawingView.draw(message.x, message.y)
+                                Timber.DebugTree().e(
+                                    "DrawingActivity - Unknown motion event: ${
+                                        message.motionEvent
+                                    }"
+                                )
                             }
                         }
+
                     }
                     is DrawAction -> {
+                        if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player
+
                         when(message.action) {
-                            DRAW_ACTION_UNDO -> {} //binding.drawingView.undo()
+                            DRAW_ACTION_UNDO -> { binding.drawingView.undo() }
                             DRAW_ACTION_DRAW -> {} //binding.drawingView.undo()
                             DRAW_ACTION_ERASE -> {} //binding.drawingView.undo()
                         }
@@ -181,7 +209,7 @@ class DrawingActivity: AppCompatActivity() {
                         showSnackbar("${message.message} - ${message.announcementType}")
                     }
                     else -> {
-                        println("Unknown/Unexpected message type: ${message.type}")
+                        println("Unknown/Unexpected Socket Message type: ${message.type}")
                     }
                 }
 
@@ -193,7 +221,7 @@ class DrawingActivity: AppCompatActivity() {
         viewModel.socketConnectionEvent.collect  { event ->
             when(event) {
                 is WebSocket.Event.OnConnectionOpened<*> -> {
-                    viewModel.sendMessage(
+                    viewModel.sendBaseMessageType(
                         // JoinRoomHandshake(args.playerName, args.roomName, dataStore.clientId()) // can also grab clientId directly
                         JoinRoomHandshake(args.playerName, args.roomName, clientId)
                     )
@@ -210,6 +238,7 @@ class DrawingActivity: AppCompatActivity() {
                 }
                 else -> {
                     // do nothing
+                    //viewModel.setConnectionProgressBarVisible(false)
                 }
             }
         }
@@ -235,31 +264,33 @@ class DrawingActivity: AppCompatActivity() {
     }
 
     @SuppressLint("ClickableViewAccessibility")  // for onTouchListener not implementing performClick()
-    private fun setupDrawingViewTouchListenerToSendDrawDataToServer() {
+    private fun setupDrawingViewTouchListenerToSendDrawDataToServer(drawView: DrawingView) {
 
+        // Maps raw coordinates to relative coordinates (relative in the drawing view)
         fun createDrawData(
             fromX: Float, fromY: Float,
             toX: Float,   toY: Float,
-            motionEvent: Int
+            motionEvent: String
         ): DrawData {
             return DrawData(
                 roomName = args.roomName ?: throw IllegalStateException("Room name is null"),
                 color = binding.drawingView.getColor(),
-                strokeWidth = binding.drawingView.getStrokeWidth(),
-                fromX = fromX, fromY = fromY,
-                toX = toX,     toY = toY,
+                strokeWidth = drawView.getStrokeWidth(),
+                fromX = fromX / drawView.getViewWidth(),
+                fromY = fromY / drawView.getViewHeight(),
+                toX = toX / drawView.getViewWidth(),
+                toY = toY / drawView.getViewHeight(),
                 motionEvent = motionEvent
             )
         }
 
         // Listen to the touch events and send them to the server via sockets
-        binding.drawingView.setOnTouchListener { view, event ->
-            println("isEnabled=${binding.drawingView.isEnabled}, $event")
-            val drawView = view as DrawingView
+        binding.drawingView.setOnTouchListener { _, event ->
+            // println("isEnabled=${binding.drawingView.isEnabled}, $event")
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    viewModel.sendMessage(
+                    viewModel.sendBaseMessageType(
                         createDrawData(
                             event.x, event.y,
                             event.x, event.y,
@@ -268,7 +299,7 @@ class DrawingActivity: AppCompatActivity() {
                     )
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    viewModel.sendMessage(
+                    viewModel.sendBaseMessageType(
                         createDrawData(
                             drawView.getCurrentX(), drawView.getCurrentY(),
                             event.x, event.y,
@@ -277,7 +308,7 @@ class DrawingActivity: AppCompatActivity() {
                     )
                 }
                 MotionEvent.ACTION_UP -> {
-                    viewModel.sendMessage(
+                    viewModel.sendBaseMessageType(
                         createDrawData(
                             drawView.getCurrentX(), drawView.getCurrentY(),
                             drawView.getCurrentX(), drawView.getCurrentY(),
@@ -289,6 +320,70 @@ class DrawingActivity: AppCompatActivity() {
 
             false
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun renderDrawDataToDrawingView(drawData: DrawData) {
+
+        // Converts DrawData from the server to DrawData mapped to the current DrawingView aspect ratio
+        fun parseDrawData(drawData: DrawData): DrawData {
+            return DrawData(
+                roomName = drawData.roomName,
+                color = drawData.color,
+                strokeWidth = drawData.strokeWidth,
+                fromX = drawData.fromX * binding.drawingView.getViewWidth(),
+                fromY = drawData.fromY * binding.drawingView.getViewHeight(),
+                toX = drawData.toX * binding.drawingView.getViewWidth(),
+                toY = drawData.toY * binding.drawingView.getViewHeight(),
+                motionEvent = drawData.motionEvent
+            )
+        }
+
+        val drawDataParsed = parseDrawData(drawData)
+
+        // Select the drawing color radio button for color selection
+        binding.colorGroup.check(
+            resourceColorToButtonIdMap[drawDataParsed.color] ?: R.id.rbBlack
+        )
+
+        when(drawDataParsed.motionEvent) {
+            DRAW_DATA_MOTION_EVENT_ACTION_DOWN -> {
+                binding.drawingView.startTouchExternally(
+                    drawDataParsed.fromX,
+                    drawDataParsed.fromY,
+                    drawDataParsed.color,
+                    drawDataParsed.strokeWidth
+                )
+            }
+            DRAW_DATA_MOTION_EVENT_ACTION_MOVE -> {
+                binding.drawingView.moveTouchExternally(
+                    drawDataParsed.toX,
+                    drawDataParsed.toY,
+                    drawDataParsed.color,
+                    drawDataParsed.strokeWidth
+                )
+            }
+            DRAW_DATA_MOTION_EVENT_ACTION_UP -> {
+                binding.drawingView.stopTouchExternally()
+            }
+            else -> {
+                throw IllegalStateException("Unknown motion event type: ${drawDataParsed.motionEvent}")
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getColorToButtonIdMap(): Map<Int, Int> {
+        return mapOf(
+              Color.RED     to R.id.rbRed,
+              Color.GREEN   to R.id.rbGreen,
+              Color.BLUE    to R.id.rbBlue,
+              Color.YELLOW  to R.id.rbYellow,
+              ContextCompat.getColor(this, android.R.color.holo_orange_dark)
+                            to R.id.rbOrange,
+              Color.WHITE   to R.id.rbEraser,
+              Color.BLACK   to R.id.rbBlack,
+        )
     }
 
 }

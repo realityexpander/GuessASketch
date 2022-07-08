@@ -40,7 +40,7 @@ class CustomGsonMessageAdapter<T> private constructor(
             @Suppress("UNCHECKED_CAST")
             return payload!! as T
         } catch (e: Exception) {
-            println("Error: Could not convert payload to $type")
+            println("Error: Could not convert payload to $typeStr")
             throw e
         }
         //handleFrame(this, session.clientId, messageJson, payload)
