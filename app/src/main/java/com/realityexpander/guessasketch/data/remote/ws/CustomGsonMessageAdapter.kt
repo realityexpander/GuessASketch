@@ -27,14 +27,15 @@ class CustomGsonMessageAdapter<T> private constructor(
             ?: throw IllegalArgumentException("Error: 'type' field not found in $messageJson")
 
         // Convert "type" to a socket message class to be used for gson deserialization
-        val type = SocketMessageType.messageTypeMap[typeStr]
+        val type = SocketMessageType.messageTypeMap[typeStr] // table lookup
         ?: let {
-            println("Error: Unknown socketType: $typeStr for $messageJson")
-            BaseMessageType::class.java // throw IllegalArgumentException("Unknown message type")
+            println("Error: Unknown SocketMessageType: $typeStr for $messageJson")
+            BaseMessageType::class.java  // default to BaseMessageType
+            // throw IllegalArgumentException("Unknown message type") // todo - throw exception?
         }
 
         try {
-            // convert payload JSON string to the "type" of webSocket message
+            // convert payload JSON string to the "type" of SocketMessageType object
             val payload = gson.fromJson(messageJson, type)
 
             @Suppress("UNCHECKED_CAST")

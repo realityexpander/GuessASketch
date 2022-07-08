@@ -50,7 +50,7 @@ class DrawingViewModel @Inject constructor(
     private val _socketConnectionEventChannel = Channel<WebSocket.Event>()
     val socketConnectionEvent = _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
-    // Socket message events
+    // Socket BaseMessage events
     private val _socketBaseMessageEventChannel = Channel<BaseMessageType>()
     val socketBaseMessageEvent = _socketBaseMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
@@ -83,7 +83,11 @@ class DrawingViewModel @Inject constructor(
                         _socketConnectionEventChannel.send(event)
                     }
                     else -> {
-//                        Timber.d("observeSocketConnectionEvents - Unhandled socket event: $event")
+                        // do nothing since we will get all events (that we didnt handle) from the websocket
+                        // including SocketBaseMessages
+
+                        // println("SocketConnection unhandled Event: $event")
+                        // Timber.d("observeSocketConnectionEvents - Unhandled socket event: $event")
                     }
                 }
             }
@@ -95,7 +99,7 @@ class DrawingViewModel @Inject constructor(
         viewModelScope.launch(dispatcher.io) {
             drawingApi.observeBaseMessages().collect { message ->
 
-                println("observeSocketBaseMessages - message: $message")
+                // println("observeSocketBaseMessages - message: $message")
 
                 // Filter messages to be sent to the activity or handled here in the viewModel
                 when(message) {
@@ -106,16 +110,21 @@ class DrawingViewModel @Inject constructor(
                         _socketBaseMessageEventChannel.send(message)
                     }
                     is Ping -> {
-                        // respond with a pong
+                        // respond with a pong (just another ping, really)
                         sendBaseMessageType(Ping(playerName))
                     }
                     else -> {
-//                        _socketBaseMessageEventChannel.send(object: BaseMessageType(message.type){})
-//                        Timber.e("DrawingViewModel - Unknown message type: ${
-//                            message.javaClass.simpleName
-//                        }, ${
-//                            gson.toJson(message, message.javaClass)
-//                        }")
+                        println("SocketMessage Event: $message")
+
+                        // do nothing since we will get all events (that we didn't handle) from the websocket
+                        // including SocketConnectionEvents
+
+                        // _socketBaseMessageEventChannel.send(object: BaseMessageType(message.type){})
+                        // Timber.e("DrawingViewModel - Unknown message type: ${
+                        //     message.javaClass.simpleName
+                        // }, ${
+                        //     gson.toJson(message, message.javaClass)
+                        // }")
                     }
 
                 }
@@ -126,7 +135,7 @@ class DrawingViewModel @Inject constructor(
 
     fun sendBaseMessageType(message: BaseMessageType) {
         viewModelScope.launch(dispatcher.io) {
-            println("Sending message: $message")
+            // println("Sending message: $message")
             drawingApi.sendBaseMessage(message)
         }
     }

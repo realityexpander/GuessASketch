@@ -59,13 +59,15 @@ class DrawingActivity: AppCompatActivity() {
         binding = ActivityDrawingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // test player is the drawing player -- remove todo
-        binding.drawingView.isEnabled = args.playerName == "test"
+//        // test player is the drawing player -- remove todo
+//        binding.drawingView.isEnabled = args.playerName == "test"
 
         // Select the color of the drawing player's pen
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
             viewModel.selectColorRadioButton(checkedId)
         }
+
+        // Setup the map of resource colors to radio button ids
         resourceColorToButtonIdMap = getColorToButtonIdMap()
 
         // Undo (only available to drawing player)
@@ -86,8 +88,6 @@ class DrawingActivity: AppCompatActivity() {
         setupDrawingViewTouchListenerToSendDrawDataToServer(binding.drawingView)
 
         viewModel.playerName = args.playerName
-
-
     }
 
     // Setup the drawer for the recyclerview list of players
@@ -213,7 +213,6 @@ class DrawingActivity: AppCompatActivity() {
             when(event) {
                 is WebSocket.Event.OnConnectionOpened<*> -> {
                     viewModel.sendBaseMessageType(
-                        // JoinRoomHandshake(args.playerName, args.roomName, dataStore.clientId()) // can also grab clientId directly
                         JoinRoomHandshake(args.playerName, args.roomName, clientId)
                     )
                     viewModel.setConnectionProgressBarVisible(false)
@@ -229,14 +228,9 @@ class DrawingActivity: AppCompatActivity() {
                 }
                 else -> {
                     // do nothing
-                    //viewModel.setConnectionProgressBarVisible(false)
                 }
             }
         }
-    }
-
-    private fun showSnackbar(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     private fun selectColor(color: Int) {
@@ -244,14 +238,6 @@ class DrawingActivity: AppCompatActivity() {
 
         // in case user has just used the eraser
         binding.drawingView.setStrokeWidth(Constants.DEFAULT_PAINT_STROKE_WIDTH)
-    }
-
-    // For ActionBarDrawer
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(toggleDrawer.onOptionsItemSelected(item)) {
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     @SuppressLint("ClickableViewAccessibility")  // for onTouchListener not implementing performClick()
@@ -373,6 +359,18 @@ class DrawingActivity: AppCompatActivity() {
               Color.WHITE   to R.id.rbEraser,
               Color.BLACK   to R.id.rbBlack,
         )
+    }
+
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    }
+
+    // For ActionBarDrawer
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(toggleDrawer.onOptionsItemSelected(item)) {
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
 }
