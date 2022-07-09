@@ -49,9 +49,9 @@ class DrawingViewModel @Inject constructor(
     private val _newWordsHolder = MutableStateFlow(NewWordsHolder(listOf()))
     val newWordsHolder: StateFlow<NewWordsHolder> = _newWordsHolder
 
-    // Game Phase
-    private val _gamePhaseUpdate = MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
-    val gamePhaseUpdate: StateFlow<GamePhaseUpdate> = _gamePhaseUpdate
+    // Game Phase Change
+    private val _gamePhaseChange = MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
+    val gamePhaseChange: StateFlow<GamePhaseUpdate> = _gamePhaseChange
 
     // Game Phase Countdown Timer
     private val countdownTimer = CoroutineCountdownTimer()
@@ -152,15 +152,16 @@ class DrawingViewModel @Inject constructor(
                     }
                     is GamePhaseUpdate -> {
 
-                        // Only change the game phase when the gamePhase is not null
+                        // Only change the game phase when the gamePhase is NOT null
+                        // Null phases are used to update the countdown timers
                         message.gamePhase?.let {
-                            _gamePhaseUpdate.value = message
+                            _gamePhaseChange.value = message
                         }
 
-                        // Get the current countdown timer from the gamePhase (from the server)
+                        // Get the current countdown timer of the gamePhase (from the server every second)
                         _gamePhaseTime.value = message.countdownTimerMillis
 
-                        // If its not the WAITING_FOR_PLAYERS phase, start a timer for the incoming phase
+                        // If *NOT* WAITING_FOR_PLAYERS phase, set/sync timer to the GamePhaseUpdate
                         if (message.gamePhase != Room.GamePhase.WAITING_FOR_PLAYERS) {
                             setGamePhaseCountdownTimer(message.countdownTimerMillis)
                         }

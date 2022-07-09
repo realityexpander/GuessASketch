@@ -237,18 +237,22 @@ class DrawingActivity: AppCompatActivity() {
             }
         }
 
-        // Game Phase timer & Progress bar
+        // Game Phase Update - update the round timer & Progress bar
         lifecycleScope.launchWhenStarted {
             viewModel.gamePhaseTime.collect { time ->
                 binding.roundTimerProgressBar.progress = time.toInt()  // uses `.max` value as maximum
-                binding.tvRemainingTimeChooseWord.text = (time/1000L).toString()
+
+                binding.tvRemainingTimeChooseWord.text = (time/1000L).toString() // if its visible
             }
         }
 
-        // Game Phase Update / Change
+        // Game Phase Change (Update is handled in gamePhaseTime)
         lifecycleScope.launchWhenStarted {
-            viewModel.gamePhaseUpdate.collect { gamePhaseUpdate ->
+            viewModel.gamePhaseChange.collect { gamePhaseUpdate ->
                 when(gamePhaseUpdate.gamePhase) {
+                    Room.GamePhase.INITIAL_STATE -> {
+                        // do nothing
+                    }
                     Room.GamePhase.WAITING_FOR_PLAYERS -> {
                         binding.tvCurWord.text = getString(R.string.waiting_for_players)
                         viewModel.cancelGamePhaseCountdownTimer()
@@ -278,7 +282,7 @@ class DrawingActivity: AppCompatActivity() {
                     Room.GamePhase.ROUND_ENDED -> {
                         binding.apply {
                             drawingView.isEnabled = false // no one can draw while the word is being shown
-                            selectColor(Color.BLACK)
+                            selectColor(Color.BLACK) // reset drawing color to black
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
 
                             // Finish the drawing if the player is drawing. (Force the stop touch)
@@ -363,7 +367,7 @@ class DrawingActivity: AppCompatActivity() {
                         addChatItemToChatMessagesAndScroll(message)
                     }
                     is SetWordToGuess -> {
-                        // server will scramble the word from non-drawing players
+                        // server will give "hidden" word to non-drawing players
                         binding.tvCurWord.text = message.wordToGuess
 
                         // disable "undo" for everyone
