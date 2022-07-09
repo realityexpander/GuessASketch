@@ -168,13 +168,13 @@ class DrawingView @JvmOverloads constructor(
         val dx = abs(toX - currX)
         val dy = abs(toY - currY)
         if(dx >= smoothness || dy >= smoothness) {
-            isDrawing = true
             path.quadTo(currX, currY,
                 (currX + toX) / 2f, (currY + toY) / 2f)
 
             curX = toX
             curY = toY
 
+            isDrawing = true
             invalidate()
         }
     }
@@ -182,8 +182,9 @@ class DrawingView @JvmOverloads constructor(
     private fun stopTouch() {
         curX ?: return
         curY ?: return
+        if(!isStarted) return
 
-        path.lineTo(curX!!, curY!!)
+        path.lineTo(curX!!, curY!!)         // todo remove the null checks
         path.setLastPoint(curX!!, curY!!)
 
         // Add the path to the stack
@@ -254,7 +255,6 @@ class DrawingView @JvmOverloads constructor(
 
         startedTouchExternally = false
     }
-
 
 }
 

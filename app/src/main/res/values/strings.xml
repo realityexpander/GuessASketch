@@ -26,7 +26,7 @@
     <string name="error_room_name_too_short">The room name must be at least %d characters long.</string>
     <string name="you">You</string>
     <string name="error_room_too_large">The maximum room size is %d.</string>
-    <string name="player_is_drawing">%s is choosing a word...</string>
+    <string name="drawing_player_is_choosing_word">%s is choosing a word...</string>
     <string name="waiting_for_players">Waiting for players...</string>
     <string name="waiting_for_start">Waiting for start...</string>
     <string name="check_internet_connection">Couldn\'t reach server. Check your internet connection.</string>

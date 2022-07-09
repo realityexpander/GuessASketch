@@ -6,7 +6,7 @@ data class Room(  // same as RoomResponse on server
     val playerCount: Int = 1
 ) {
 
-    enum class GamePhase {
+    enum class GamePhase {  // todo should move enum to GamePhaseUpdate?
         INITIAL_STATE,       // no state yet.
         WAITING_FOR_PLAYERS,
         WAITING_FOR_START,

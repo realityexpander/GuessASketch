@@ -5,6 +5,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 
+// Hide the keyboard (waaaaayyyy more complicated than it needs to be)
 fun Activity.hideKeyboard(root: View) {
     val windowToken = root.windowToken
     val inputMethodManager = getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager

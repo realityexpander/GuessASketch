@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.realityexpander.guessasketch.R
+import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.DrawingApi
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
+import com.realityexpander.guessasketch.util.CoroutineCountdownTimer
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -46,6 +49,16 @@ class DrawingViewModel @Inject constructor(
     private val _newWordsHolder = MutableStateFlow(NewWordsHolder(listOf()))
     val newWordsHolder: StateFlow<NewWordsHolder> = _newWordsHolder
 
+    // Game Phase
+    private val _gamePhaseUpdate = MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
+    val gamePhaseUpdate: StateFlow<GamePhaseUpdate> = _gamePhaseUpdate
+
+    // Game Phase Countdown Timer
+    private val countdownTimer = CoroutineCountdownTimer()
+    private var countdownTimerJob: Job? = null
+    private val _gamePhaseTime = MutableStateFlow(0L)
+    val gamePhaseTime: StateFlow<Long> = _gamePhaseTime
+
     //////////////////////////////
     // WebSocket events
 
@@ -66,6 +79,18 @@ class DrawingViewModel @Inject constructor(
         observeSocketConnectionEvents()
         observeSocketBaseMessages()
     }
+
+    private fun setGamePhaseCountdownTimer(durationMillis: Long) {
+        countdownTimerJob?.cancel()
+        countdownTimerJob = countdownTimer.timeAndEmitJob(durationMillis, viewModelScope) { timeLeftMillis ->
+            _gamePhaseTime.value = timeLeftMillis
+        }
+    }
+
+    fun cancelGamePhaseCountdownTimer() {
+        countdownTimerJob?.cancel()
+    }
+
 
     fun setChooseWordOverlayVisible(visible: Boolean) {
         _chooseWordOverlayVisible.value = visible
@@ -119,11 +144,26 @@ class DrawingViewModel @Inject constructor(
                     }
                     is NewWordsHolder -> {
                         _newWordsHolder.value = message
-                        //_socketBaseMessageEventChannel.send(message)  // todo is this used at all?
+                        //_socketBaseMessageEventChannel.send(message)  // todo is this used at all? remove?
                     }
                     is Ping -> {
                         // respond with a pong (just another ping, really)
                         sendBaseMessageType(Ping(playerName))
+                    }
+                    is GamePhaseUpdate -> {
+
+                        // Only change the game phase when the gamePhase is not null
+                        message.gamePhase?.let {
+                            _gamePhaseUpdate.value = message
+                        }
+
+                        // Get the current countdown timer from the gamePhase (from the server)
+                        _gamePhaseTime.value = message.countdownTimerMillis
+
+                        // If its not the WAITING_FOR_PLAYERS phase, start a timer for the incoming phase
+                        if (message.gamePhase != Room.GamePhase.WAITING_FOR_PLAYERS) {
+                            setGamePhaseCountdownTimer(message.countdownTimerMillis)
+                        }
                     }
                     else -> {
                         println("SocketMessage Event: $message")

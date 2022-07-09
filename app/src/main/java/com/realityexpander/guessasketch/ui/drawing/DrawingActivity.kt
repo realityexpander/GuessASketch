@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_UNDO
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_DOWN
 import com.realityexpander.guessasketch.R
+import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_DRAW
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_ERASE
@@ -210,27 +211,100 @@ class DrawingActivity: AppCompatActivity() {
                 val newWords = newWordsHolder.words
                 if(newWords.isEmpty()) return@collect
 
+                // Let player set a new word to guess
                 binding.apply {
                     btnFirstWord.text = newWords[0]
                     btnSecondWord.text = newWords[1]
                     btnThirdWord.text = newWords[2]
 
                     btnFirstWord.setOnClickListener {
-                        viewModel.sendBaseMessageType(SetWordToGuess(newWords[0], args.roomName))
+                        sendSetWordToGuessMessage(newWords[0], args.roomName)
                         viewModel.setChooseWordOverlayVisible(false)
                     }
 
                     btnSecondWord.setOnClickListener {
-                        viewModel.sendBaseMessageType(SetWordToGuess(newWords[1], args.roomName))
+                        sendSetWordToGuessMessage(newWords[1], args.roomName)
                         viewModel.setChooseWordOverlayVisible(false)
                     }
 
                     btnSecondWord.setOnClickListener {
-                        viewModel.sendBaseMessageType(SetWordToGuess(newWords[2], args.roomName))
+                        sendSetWordToGuessMessage(newWords[2], args.roomName)
                         viewModel.setChooseWordOverlayVisible(false)
                     }
 
                     viewModel.setChooseWordOverlayVisible(true)
+                }
+            }
+        }
+
+        // Game Phase timer & Progress bar
+        lifecycleScope.launchWhenStarted {
+            viewModel.gamePhaseTime.collect { time ->
+                binding.roundTimerProgressBar.progress = time.toInt()  // uses `.max` value as maximum
+                binding.tvRemainingTimeChooseWord.text = (time/1000L).toString()
+            }
+        }
+
+        // Game Phase Update / Change
+        lifecycleScope.launchWhenStarted {
+            viewModel.gamePhaseUpdate.collect { gamePhaseUpdate ->
+                when(gamePhaseUpdate.gamePhase) {
+                    Room.GamePhase.WAITING_FOR_PLAYERS -> {
+                        binding.tvCurWord.text = getString(R.string.waiting_for_players)
+                        viewModel.cancelGamePhaseCountdownTimer()
+                        viewModel.setConnectionProgressBarVisible(false)
+                        binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
+                    }
+                    Room.GamePhase.WAITING_FOR_START -> {
+                        binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
+                        binding.tvCurWord.text = getString(R.string.waiting_for_start)
+                    }
+                    Room.GamePhase.NEW_ROUND -> {
+                        gamePhaseUpdate.drawingPlayerName?.let { drawingPlayer ->
+                            binding.tvCurWord.text = getString(R.string.drawing_player_is_choosing_word, drawingPlayer)
+                        }
+                        binding.apply {
+                            drawingView.isEnabled = false // no one can draw while the word is being chosen
+                            selectColor(Color.BLACK) // reset drawing color to black
+                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                            val isUserDrawingPlayer = gamePhaseUpdate.drawingPlayerName == args.playerName
+                            viewModel.setChooseWordOverlayVisible(isUserDrawingPlayer) // only the user can choose the word
+                        }
+                    }
+                    Room.GamePhase.ROUND_IN_PROGRESS -> {
+                        viewModel.setChooseWordOverlayVisible(false) // no one can choose the word anymore
+                        binding.roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                    }
+                    Room.GamePhase.ROUND_ENDED -> {
+                        binding.apply {
+                            drawingView.isEnabled = false // no one can draw while the word is being shown
+                            selectColor(Color.BLACK)
+                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+
+                            // Finish the drawing if the player is drawing. (Force the stop touch)
+                            if (drawingView.isDrawing) {
+
+                                drawingView.apply {
+                                    // Send the closing ACTION_UP to the server
+                                    viewModel.sendBaseMessageType(
+                                        createDrawData(
+                                            getCurrentX(),
+                                            getCurrentY(),
+                                            getCurrentX(),
+                                            getCurrentY(),
+                                            DRAW_DATA_MOTION_EVENT_ACTION_UP
+                                        )
+                                    )
+
+                                    // Finish the drawing locally
+                                    stopTouchExternally()
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        Timber.DebugTree().e("DrawingActivity - Unexpected GamePhaseUpdate type: ${gamePhaseUpdate.gamePhase}")
+                    }
                 }
             }
         }
@@ -333,32 +407,18 @@ class DrawingActivity: AppCompatActivity() {
 
     // Select the drawing color of the drawing view
     private fun selectColor(color: Int) {
+        curDrawingColor = color
+
         binding.drawingView.setColor(color)
 
         // in case user has just used the eraser
         binding.drawingView.setStrokeWidth(Constants.DEFAULT_PAINT_STROKE_WIDTH)
+
+        selectColorRadioButtonForColor(color) // update radio button selection
     }
 
     @SuppressLint("ClickableViewAccessibility")  // for onTouchListener not implementing performClick()
     private fun setupDrawingViewTouchListenerToSendDrawDataToServer(drawView: DrawingView) {
-
-        // Maps raw coordinates to relative coordinates (relative in the drawing view)
-        fun createDrawData(
-            fromX: Float, fromY: Float,
-            toX: Float,   toY: Float,
-            motionEvent: String
-        ): DrawData {
-            return DrawData(
-                roomName = args.roomName ?: throw IllegalStateException("Room name is null"),
-                color = binding.drawingView.getColor(),
-                strokeWidth = drawView.getStrokeWidth(),
-                fromX = fromX / drawView.getViewWidth(),
-                fromY = fromY / drawView.getViewHeight(),
-                toX = toX / drawView.getViewWidth(),
-                toY = toY / drawView.getViewHeight(),
-                motionEvent = motionEvent
-            )
-        }
 
         // Listen to the touch events and send them to the server via sockets
         binding.drawingView.setOnTouchListener { _, event ->
@@ -398,6 +458,24 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
+    // Maps raw coordinates to relative coordinates (relative in the drawing view)
+    private fun createDrawData(
+        fromX: Float, fromY: Float,
+        toX: Float,   toY: Float,
+        motionEvent: String
+    ): DrawData {
+        return DrawData(
+            roomName = args.roomName ?: throw IllegalStateException("Room name is null"),
+            color = binding.drawingView.getColor(),
+            strokeWidth = binding.drawingView.getStrokeWidth(),
+            fromX = fromX / binding.drawingView.getViewWidth(),
+            fromY = fromY / binding.drawingView.getViewHeight(),
+            toX = toX / binding.drawingView.getViewWidth(),
+            toY = toY / binding.drawingView.getViewHeight(),
+            motionEvent = motionEvent
+        )
+    }
+
     // Render the "Drawing Player" drawing from the server
     private fun renderDrawDataToDrawingView(drawData: DrawData) {
 
@@ -418,9 +496,7 @@ class DrawingActivity: AppCompatActivity() {
         val drawDataParsed = parseDrawData(drawData)
 
         // Select the drawing color radio button for color selection
-        binding.colorGroup.check(
-            resourceColorToButtonIdMap[drawDataParsed.color] ?: R.id.rbBlack
-        )
+        selectColorRadioButtonForColor(drawDataParsed.color)
 
         when(drawDataParsed.motionEvent) {
             DRAW_DATA_MOTION_EVENT_ACTION_DOWN -> {
@@ -446,6 +522,13 @@ class DrawingActivity: AppCompatActivity() {
                 throw IllegalStateException("Unknown DRAW_DATA_MOTION_EVENT event type: ${drawDataParsed.motionEvent}")
             }
         }
+    }
+
+    // Select the radio button for a given color
+    private fun selectColorRadioButtonForColor(color: Int) {
+        binding.colorGroup.check(
+            resourceColorToButtonIdMap[color] ?: R.id.rbBlack
+        )
     }
 
     //  Map of Colors to radio button IDs
@@ -517,7 +600,7 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
-    private fun setWordToGuess(word: String, roomName: String) {
+    private fun sendSetWordToGuessMessage(word: String, roomName: String) {
         val setWordToGuess = SetWordToGuess(word, roomName)
 
         viewModel.sendBaseMessageType(setWordToGuess)
