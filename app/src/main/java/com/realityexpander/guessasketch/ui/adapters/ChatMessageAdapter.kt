@@ -3,6 +3,7 @@ package com.realityexpander.guessasketch.ui.adapters
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.realityexpander.guessasketch.data.remote.common.Room
@@ -14,8 +15,7 @@ import com.realityexpander.guessasketch.databinding.ItemAnnouncementBinding
 import com.realityexpander.guessasketch.databinding.ItemChatMessageIncomingBinding
 import com.realityexpander.guessasketch.databinding.ItemChatMessageOutgoingBinding
 import com.realityexpander.guessasketch.util.toTimeString
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 private const val VIEW_TYPE_INCOMING_MESSAGE = 0
 private const val VIEW_TYPE_OUTGOING_MESSAGE = 1
@@ -38,6 +38,14 @@ class ChatMessageAdapter constructor(
 
     class AnnouncementViewHolder(val binding: ItemAnnouncementBinding):
         RecyclerView.ViewHolder(binding.root)
+
+    private var updateChatMessagesJob: Job? = null
+    fun updateChatMessageList(newData: List<BaseMessageType>, lifecycleScope: CoroutineScope) {
+        updateChatMessagesJob?.cancel() // cancel the previous job if it exists
+        updateChatMessagesJob = lifecycleScope.launch {
+            updateDataset(newData)
+        }
+    }
 
     // This job must be cancelled when the adapter is destroyed to avoid memory leaks.
     suspend fun updateDataset(newDataset: List<BaseMessageType>) = withContext(Dispatchers.Default) {

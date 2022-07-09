@@ -108,6 +108,7 @@ class DrawingViewModel @Inject constructor(
                     is DrawData,
                     is DrawAction,
                     is Announcement,
+                    is ChatMessage,
                     is GameError -> {
                         _socketBaseMessageEventChannel.send(message)
                     }

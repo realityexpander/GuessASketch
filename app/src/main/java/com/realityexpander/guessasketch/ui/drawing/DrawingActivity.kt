@@ -92,6 +92,25 @@ class DrawingActivity: AppCompatActivity() {
             }
         }
 
+        // Clear text message
+        binding.ibClearText.setOnClickListener {
+            binding.etMessage.text?.clear()
+        }
+
+        // Send chat message
+        binding.ibSend.setOnClickListener {
+            viewModel.sendChatMessage(
+                ChatMessage(
+                    fromClientId = clientId,
+                    fromPlayerName = args.playerName,
+                    message = binding.etMessage.text.toString(),
+                    timestamp = System.currentTimeMillis(),
+                    roomName = args.roomName
+                )
+            )
+            binding.etMessage.text?.clear()
+        }
+
         setupNavDrawer()
         setupChatMessageRecyclerView()
 
@@ -101,6 +120,13 @@ class DrawingActivity: AppCompatActivity() {
         listenToSocketMessageEvents()
 
         setupDrawingViewTouchListenerToSendDrawDataToServer(binding.drawingView)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Save the state of the chat message recycler view
+        binding.rvChat.layoutManager?.onSaveInstanceState()
     }
 
     // Setup the drawer for the recyclerview list of players
@@ -373,7 +399,7 @@ class DrawingActivity: AppCompatActivity() {
                 binding.drawingView.stopTouchExternally()
             }
             else -> {
-                throw IllegalStateException("Unknown motion event type: ${drawDataParsed.motionEvent}")
+                throw IllegalStateException("Unknown DRAW_DATA_MOTION_EVENT event type: ${drawDataParsed.motionEvent}")
             }
         }
     }
@@ -411,6 +437,10 @@ class DrawingActivity: AppCompatActivity() {
             chatMessageAdapter = ChatMessageAdapter(args.playerName, clientId)
             adapter = chatMessageAdapter
         }
+
+        // Only restore the RV state when the list is empty
+        chatMessageAdapter.stateRestorationPolicy =
+            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
     }
 
     private var updateChatMessagesJob: Job? = null // for cancelling the update job when new messages are received
@@ -419,6 +449,8 @@ class DrawingActivity: AppCompatActivity() {
         updateChatMessagesJob = lifecycleScope.launch {
             chatMessageAdapter.updateDataset(chatList)
         }
+
+        // chatMessageAdapter.updateChatMessageList(chatList, lifecycleScope) // replace at end todo
     }
 
     private suspend fun addChatItemToChatMessagesAndScroll(chatItem: BaseMessageType) {
