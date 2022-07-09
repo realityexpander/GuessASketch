@@ -174,10 +174,11 @@ class ChatMessageAdapter constructor(
         }
     }
 
-    // Function that is called when the room item is clicked.
-    private var onRoomItemClickListener: ((Room) -> Unit)? = null
-
-    fun setOnRoomItemClickListener(listener: (Room) -> Unit) {
-        onRoomItemClickListener = listener
-    }
+    // todo remove these
+//    // Function that is called when the room item is clicked.
+//    private var onRoomItemClickListener: ((Room) -> Unit)? = null
+//
+//    fun setOnRoomItemClickListener(listener: (Room) -> Unit) {
+//        onRoomItemClickListener = listener
+//    }
 }

@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.realityexpander.guessasketch.ui.setup.select_username.UsernameViewModel.SetupEvent.*
 import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
+import com.realityexpander.guessasketch.util.hideKeyboard
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
 import kotlinx.coroutines.flow.collect
@@ -32,10 +33,14 @@ class UsernameFragment: Fragment(R.layout.fragment_player_name) {
 
         listenToEvents()
 
+        // Navigate to the Select Room fragment
         binding.btnNext.setOnClickListener {
             viewModel.validatePlayerNameAndNavigateToSelectRoom(
                 binding.etUsername.text.toString()
             )
+
+            // hide the keyboard for user to see the snackbar message
+            requireActivity().hideKeyboard(binding.root)
         }
     }
 

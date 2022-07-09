@@ -15,6 +15,7 @@ import com.realityexpander.guessasketch.databinding.FragmentCreateRoomBinding
 import com.realityexpander.guessasketch.ui.setup.create_room.CreateRoomViewModel.SetupEvent
 import com.realityexpander.guessasketch.util.Constants.MAX_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
+import com.realityexpander.guessasketch.util.hideKeyboard
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,8 +39,11 @@ class CreateRoomFragment: Fragment(R.layout.fragment_create_room) {
 
         setupRoomSizeSpinner()
 
+        // Create room button
         binding.btnCreateRoom.setOnClickListener {
             viewModel.emitSetupEvent(SetupEvent.CreateRoomEvent)
+
+            requireActivity().hideKeyboard(binding.root)
         }
 
         listenToEvents()

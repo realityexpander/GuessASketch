@@ -30,6 +30,7 @@ import com.realityexpander.guessasketch.di.CLIENT_ID
 import com.realityexpander.guessasketch.ui.adapters.ChatMessageAdapter
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
+import com.realityexpander.guessasketch.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -109,6 +110,7 @@ class DrawingActivity: AppCompatActivity() {
                 )
             )
             binding.etMessage.text?.clear()
+            hideKeyboard(binding.root)
         }
 
         setupNavDrawer()
