@@ -302,7 +302,7 @@ class DrawingActivity: AppCompatActivity() {
                             }
                         }
                     }
-                    else {
+                    else -> {
                         Timber.DebugTree().e("DrawingActivity - Unexpected GamePhaseUpdate type: ${gamePhaseUpdate.gamePhase}")
                     }
                 }

@@ -224,6 +224,7 @@ class DrawingView @JvmOverloads constructor(
         invalidate()
     }
 
+    //////////////////////////////////////////////////////////
     //// RESPOND TO THE SERVER SENDING A NEW PATH TO DRAW ////
 
     private var startedTouchExternally = false
