@@ -220,7 +220,11 @@ class DrawingActivity: AppCompatActivity() {
                         }
                     }
                     is Announcement -> {
-                        showSnackbar("${message.message} - ${message.announcementType}")
+                        //showSnackbar("${message.message} - ${message.announcementType}")
+                        addChatItemToChatMessagesAndScroll(message)
+                    }
+                    is ChatMessage -> {
+                        addChatItemToChatMessagesAndScroll(message)
                     }
                     else -> {
                         println("Unknown/Unexpected Socket Message type: ${message.type}")
@@ -417,14 +421,20 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
-    private suspend fun addChatItemToChatMessagesAndScroll(chatObject: BaseMessageType) {
+    private suspend fun addChatItemToChatMessagesAndScroll(chatItem: BaseMessageType) {
 
-        val canScrollDown = binding.rvChat.canScrollVertically(CAN_SCROLL_DOWN)
-        updateChatMessagesList(chatMessageAdapter.chatItems + chatObject)
+        // Is the user scrolled to the bottom of the list?
+        //   If so, we should scroll to reveal the new message.
+        val shouldScrollToNewMessage = !binding.rvChat.canScrollVertically(CAN_SCROLL_DOWN)
 
-        updateChatMessagesJob?.join() // wait for the update job to finish before scrolling down
+        // Add the chat item to the bottom of the chat messages list
+        updateChatMessagesList(chatMessageAdapter.chatItems + chatItem)
 
-        if (!canScrollDown) { // were at the bottom of the list, so scroll down
+        // wait for the update job to finish before (maybe) scrolling down to see the new message.
+        updateChatMessagesJob?.join()
+
+        // Is the user scrolled to the bottom of the list? If so, scroll down to reveal new message.
+        if (shouldScrollToNewMessage) {
             // scroll to the last item
             binding.rvChat.scrollToPosition(chatMessageAdapter.chatItems.size - 1)
         }
