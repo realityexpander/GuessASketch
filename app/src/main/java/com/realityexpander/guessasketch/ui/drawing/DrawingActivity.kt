@@ -32,13 +32,17 @@ import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
 typealias ColorInt = Int // like @ColorInt
 typealias ResId = Int // like @ResId
+
+const val CAN_SCROLL_DOWN = 1 // for if messages are received while scrolling down
 
 @AndroidEntryPoint
 class DrawingActivity: AppCompatActivity() {
@@ -158,6 +162,17 @@ class DrawingActivity: AppCompatActivity() {
         lifecycleScope.launchWhenStarted {
             viewModel.chooseWordOverlayVisible.collect { isVisible ->
                 binding.chooseWordOverlay.visibility = if (isVisible) View.VISIBLE else View.GONE
+            }
+        }
+
+        // Chat messages
+        lifecycleScope.launchWhenStarted {
+            viewModel.chatMessages.collect { chatItems ->
+                if(chatMessageAdapter.chatItems.isEmpty()) {
+                    updateChatMessagesList(chatItems)
+                } else {
+                    //addChatItemToChatMessagesAndScroll(chatItems)
+                }
             }
         }
     }
@@ -391,6 +406,27 @@ class DrawingActivity: AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@DrawingActivity)
             chatMessageAdapter = ChatMessageAdapter(args.playerName, clientId)
             adapter = chatMessageAdapter
+        }
+    }
+
+    private var updateChatMessagesJob: Job? = null // for cancelling the update job when new messages are received
+    private fun updateChatMessagesList(chatList: List<BaseMessageType>) {
+        updateChatMessagesJob?.cancel() // cancel the previous job if it exists
+        updateChatMessagesJob = lifecycleScope.launch {
+            chatMessageAdapter.updateDataset(chatList)
+        }
+    }
+
+    private suspend fun addChatItemToChatMessagesAndScroll(chatObject: BaseMessageType) {
+
+        val canScrollDown = binding.rvChat.canScrollVertically(CAN_SCROLL_DOWN)
+        updateChatMessagesList(chatMessageAdapter.chatItems + chatObject)
+
+        updateChatMessagesJob?.join() // wait for the update job to finish before scrolling down
+
+        if (!canScrollDown) { // were at the bottom of the list, so scroll down
+            // scroll to the last item
+            binding.rvChat.scrollToPosition(chatMessageAdapter.chatItems.size - 1)
         }
     }
 

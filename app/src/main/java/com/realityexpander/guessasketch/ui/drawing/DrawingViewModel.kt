@@ -12,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,6 +38,9 @@ class DrawingViewModel @Inject constructor(
     private val _chooseWordOverlayVisible = MutableStateFlow(false)
     val chooseWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
 
+    // Chat messages
+    private val _chatMessages = MutableStateFlow<List<BaseMessageType>>(listOf())
+    val chatMessages: StateFlow<List<BaseMessageType>> = _chatMessages
 
     //////////////////////////////
     // WebSocket events
@@ -134,7 +136,17 @@ class DrawingViewModel @Inject constructor(
     }
 
     // Send messages to the socket for the server to handle
-    fun sendBaseMessageType(message: BaseMessageType) {
+    fun sendBaseMessageType(data: BaseMessageType) {
+        viewModelScope.launch(dispatcher.io) {
+            // println("Sending message: $message")
+            drawingApi.sendBaseMessage(data)
+        }
+    }
+
+    // Send chat messages to the socket for the server to handle
+    fun sendChatMessage(message: ChatMessage) {
+        if (message.message.trim().isEmpty()) return
+
         viewModelScope.launch(dispatcher.io) {
             // println("Sending message: $message")
             drawingApi.sendBaseMessage(message)
