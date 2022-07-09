@@ -42,6 +42,10 @@ class DrawingViewModel @Inject constructor(
     private val _chatMessages = MutableStateFlow<List<BaseMessageType>>(listOf())
     val chatMessages: StateFlow<List<BaseMessageType>> = _chatMessages
 
+    // New words (pick 3 words)
+    private val _newWordsHolder = MutableStateFlow(NewWordsHolder(listOf()))
+    val newWordsHolder: StateFlow<NewWordsHolder> = _newWordsHolder
+
     //////////////////////////////
     // WebSocket events
 
@@ -109,8 +113,13 @@ class DrawingViewModel @Inject constructor(
                     is DrawAction,
                     is Announcement,
                     is ChatMessage,
+                    is SetWordToGuess,
                     is GameError -> {
                         _socketBaseMessageEventChannel.send(message)
+                    }
+                    is NewWordsHolder -> {
+                        _newWordsHolder.value = message
+                        //_socketBaseMessageEventChannel.send(message)  // todo is this used at all?
                     }
                     is Ping -> {
                         // respond with a pong (just another ping, really)

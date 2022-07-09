@@ -203,6 +203,37 @@ class DrawingActivity: AppCompatActivity() {
                 }
             }
         }
+
+        // New Words -> SetWordToGuess
+        lifecycleScope.launchWhenStarted {
+            viewModel.newWordsHolder.collect { newWordsHolder ->
+                val newWords = newWordsHolder.words
+                if(newWords.isEmpty()) return@collect
+
+                binding.apply {
+                    btnFirstWord.text = newWords[0]
+                    btnSecondWord.text = newWords[1]
+                    btnThirdWord.text = newWords[2]
+
+                    btnFirstWord.setOnClickListener {
+                        viewModel.sendBaseMessageType(SetWordToGuess(newWords[0], args.roomName))
+                        viewModel.setChooseWordOverlayVisible(false)
+                    }
+
+                    btnSecondWord.setOnClickListener {
+                        viewModel.sendBaseMessageType(SetWordToGuess(newWords[1], args.roomName))
+                        viewModel.setChooseWordOverlayVisible(false)
+                    }
+
+                    btnSecondWord.setOnClickListener {
+                        viewModel.sendBaseMessageType(SetWordToGuess(newWords[2], args.roomName))
+                        viewModel.setChooseWordOverlayVisible(false)
+                    }
+
+                    viewModel.setChooseWordOverlayVisible(true)
+                }
+            }
+        }
     }
 
     // Listen to socket messages from the server
@@ -253,6 +284,14 @@ class DrawingActivity: AppCompatActivity() {
                     }
                     is ChatMessage -> {
                         addChatItemToChatMessagesAndScroll(message)
+                    }
+                    is SetWordToGuess -> {
+                        // server will scramble the word from non-drawing players
+                        binding.tvCurWord.text = message.wordToGuess
+
+                        // disable "undo" for everyone
+                        // (will be re-enabled when player is drawing player)
+                        binding.ibUndo.isEnabled = false
                     }
                     else -> {
                         println("Unknown/Unexpected Socket Message type: ${message.type}")
@@ -475,6 +514,11 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
+    private fun setWordToGuess(word: String, roomName: String) {
+        val setWordToGuess = SetWordToGuess(word, roomName)
+
+        viewModel.sendBaseMessageType(setWordToGuess)
+    }
 }
 
 
