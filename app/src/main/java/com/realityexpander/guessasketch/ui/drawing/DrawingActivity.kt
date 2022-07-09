@@ -450,6 +450,7 @@ class DrawingActivity: AppCompatActivity() {
             chatMessageAdapter.updateDataset(chatList)
         }
 
+        // Handle the job & cancellation in the RV (not here in the activity)
         // chatMessageAdapter.updateChatMessageList(chatList, lifecycleScope) // replace at end todo
     }
 
@@ -457,16 +458,16 @@ class DrawingActivity: AppCompatActivity() {
 
         // Is the user scrolled to the bottom of the list?
         //   If so, we should scroll to reveal the new message.
-        val shouldScrollToNewMessage = !binding.rvChat.canScrollVertically(CAN_SCROLL_DOWN)
+        val isScrolledToBottom = !binding.rvChat.canScrollVertically(CAN_SCROLL_DOWN)
 
         // Add the chat item to the bottom of the chat messages list
         updateChatMessagesList(chatMessageAdapter.chatItems + chatItem)
 
-        // wait for the update job to finish before (maybe) scrolling down to see the new message.
+        // wait for the update job to finish before (possibly) scrolling down to see the new message.
         updateChatMessagesJob?.join()
 
         // Is the user scrolled to the bottom of the list? If so, scroll down to reveal new message.
-        if (shouldScrollToNewMessage) {
+        if (isScrolledToBottom) {
             // scroll to the last item
             binding.rvChat.scrollToPosition(chatMessageAdapter.chatItems.size - 1)
         }

@@ -22,7 +22,9 @@
             android:layout_height="wrap_content"
             android:text="Username"
             android:layout_marginStart="16dp"
+            android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="@color/gray"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -46,6 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:text="16:23:45"
+        android:textSize="16sp"
         android:layout_gravity="bottom"
         app:layout_constraintBottom_toBottomOf="@+id/tvMessage"
         app:layout_constraintEnd_toEndOf="parent" />
