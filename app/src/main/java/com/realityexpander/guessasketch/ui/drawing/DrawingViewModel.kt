@@ -39,7 +39,7 @@ class DrawingViewModel @Inject constructor(
 
     // Choose Word Overlay visibility
     private val _chooseWordOverlayVisible = MutableStateFlow(false)
-    val chooseWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
+    val pickWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
 
     // Chat messages
     private val _chatMessages = MutableStateFlow<List<BaseMessageType>>(listOf())
@@ -91,8 +91,7 @@ class DrawingViewModel @Inject constructor(
         countdownTimerJob?.cancel()
     }
 
-
-    fun setChooseWordOverlayVisible(visible: Boolean) {
+    fun setPickWordOverlayVisible(visible: Boolean) {
         _chooseWordOverlayVisible.value = visible
     }
 
@@ -153,7 +152,7 @@ class DrawingViewModel @Inject constructor(
                     is GamePhaseUpdate -> {
 
                         // Only change the game phase when the gamePhase is NOT null
-                        // Null phases are used to update the countdown timers
+                        // Note: null gamePhases are used to update the countdown timers
                         message.gamePhase?.let {
                             _gamePhaseChange.value = message
                         }
@@ -167,7 +166,7 @@ class DrawingViewModel @Inject constructor(
                         }
                     }
                     else -> {
-                        println("SocketMessage Event: $message")
+                        println("DrawingViewModel observeSocketConnectionEvents - Unhandled SocketMessage Event: $message")
 
                         // do nothing since we will get all events (that we didn't handle) from the websocket
                         // including SocketConnectionEvents

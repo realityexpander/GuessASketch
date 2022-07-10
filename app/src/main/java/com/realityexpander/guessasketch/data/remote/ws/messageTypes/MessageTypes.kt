@@ -17,9 +17,9 @@ object SocketMessageType {
     const val TYPE_JOIN_ROOM_HANDSHAKE = "TYPE_JOIN_ROOM_HANDSHAKE"
     const val TYPE_GAME_ERROR          = "TYPE_GAME_ERROR"
     const val TYPE_GAME_PHASE_UPDATE   = "TYPE_GAME_PHASE_UPDATE"  // was TYPE_GAME_PHASE_CHANGE
-    const val TYPE_SET_WORD_TO_GUESS   = "TYPE_SET_WORD_TO_GUESS"
-    const val TYPE_GAME_STATE          = "TYPE_GAME_STATE" // contains player & wordToGuess
     const val TYPE_WORDS_TO_PICK_HOLDER= "TYPE_WORDS_TO_PICK_HOLDER" // contains new words for drawing player to pick
+    const val TYPE_SET_WORD_TO_GUESS   = "TYPE_SET_WORD_TO_GUESS"  // After Drawing Player picks a word, send this to the server to set the word to guess
+    const val TYPE_GAME_STATE          = "TYPE_GAME_STATE" // contains player & wordToGuess
     const val TYPE_PLAYERS_LIST        = "TYPE_PLAYERS_LIST" // contains list of player data (score, rank, etc)
     const val TYPE_PING                = "TYPE_PING"
     const val TYPE_DISCONNECT_REQUEST  = "TYPE_DISCONNECT_REQUEST"
@@ -35,10 +35,10 @@ object SocketMessageType {
         messageTypeMap[TYPE_ADD_ROOM]            = AddRoom::class.java
         messageTypeMap[TYPE_JOIN_ROOM_HANDSHAKE] = JoinRoomHandshake::class.java
         messageTypeMap[TYPE_GAME_PHASE_UPDATE]   = GamePhaseUpdate::class.java
+        messageTypeMap[TYPE_WORDS_TO_PICK_HOLDER]= WordsToPickHolder::class.java
         messageTypeMap[TYPE_SET_WORD_TO_GUESS]   = SetWordToGuess::class.java
         messageTypeMap[TYPE_GAME_STATE]          = GameState::class.java
         messageTypeMap[TYPE_GAME_ERROR]          = GameError::class.java
-        messageTypeMap[TYPE_WORDS_TO_PICK_HOLDER]= WordsToPickHolder::class.java
         messageTypeMap[TYPE_PLAYERS_LIST]        = PlayersList::class.java
         messageTypeMap[TYPE_PING]                = Ping::class.java
         messageTypeMap[TYPE_DISCONNECT_REQUEST]  = DisconnectRequest::class.java

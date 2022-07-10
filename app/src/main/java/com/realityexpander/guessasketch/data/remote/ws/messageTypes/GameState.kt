@@ -4,5 +4,6 @@ import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessag
 
 data class GameState(
     val drawingPlayerName: String,
+    val drawingPlayerClientId: ClientId,
     val wordToGuess: String
 ): BaseMessageType(TYPE_GAME_STATE)

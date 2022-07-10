@@ -187,10 +187,10 @@ class DrawingActivity: AppCompatActivity() {
             }
         }
 
-        // Choose Word Overlay visibility
+        // Pick Word Overlay visibility
         lifecycleScope.launchWhenStarted {
-            viewModel.chooseWordOverlayVisible.collect { isVisible ->
-                binding.chooseWordOverlay.visibility = if (isVisible) View.VISIBLE else View.GONE
+            viewModel.pickWordOverlayVisible.collect { isVisible ->
+                binding.pickWordOverlay.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
         }
 
@@ -205,32 +205,32 @@ class DrawingActivity: AppCompatActivity() {
             }
         }
 
-        // New Words -> SetWordToGuess
+        // WordsToPickHolder -> SetWordToGuess
         lifecycleScope.launchWhenStarted {
-            viewModel.wordsToPickHolder.collect { newWordsHolder ->
-                val newWords = newWordsHolder.words
-                if(newWords.isEmpty()) return@collect
+            viewModel.wordsToPickHolder.collect { wordsToPickHolder ->
+                val wordsToPick = wordsToPickHolder.words
+                if(wordsToPick.isEmpty()) return@collect
 
                 // Let player choose a new word to guess from the list of new words
                 binding.apply {
-                    btnFirstWord.text = newWords[0]
-                    btnSecondWord.text = newWords[1]
-                    btnThirdWord.text = newWords[2]
-                    viewModel.setChooseWordOverlayVisible(true)
+                    btnFirstWord.text = wordsToPick[0]
+                    btnSecondWord.text = wordsToPick[1]
+                    btnThirdWord.text = wordsToPick[2]
+                    viewModel.setPickWordOverlayVisible(true)
 
                     btnFirstWord.setOnClickListener {
-                        sendSetWordToGuessMessage(newWords[0], args.roomName)
-                        viewModel.setChooseWordOverlayVisible(false)
+                        sendSetWordToGuessMessage(wordsToPick[0], args.roomName)
+                        viewModel.setPickWordOverlayVisible(false)
                     }
 
                     btnSecondWord.setOnClickListener {
-                        sendSetWordToGuessMessage(newWords[1], args.roomName)
-                        viewModel.setChooseWordOverlayVisible(false)
+                        sendSetWordToGuessMessage(wordsToPick[1], args.roomName)
+                        viewModel.setPickWordOverlayVisible(false)
                     }
 
                     btnSecondWord.setOnClickListener {
-                        sendSetWordToGuessMessage(newWords[2], args.roomName)
-                        viewModel.setChooseWordOverlayVisible(false)
+                        sendSetWordToGuessMessage(wordsToPick[2], args.roomName)
+                        viewModel.setPickWordOverlayVisible(false)
                     }
                 }
             }
@@ -249,49 +249,51 @@ class DrawingActivity: AppCompatActivity() {
         lifecycleScope.launchWhenStarted {
             viewModel.gamePhaseChange.collect { gamePhaseUpdate ->
 
+                println("gamePhaseChange = $gamePhaseUpdate")
+
                 when(gamePhaseUpdate.gamePhase) {
                     Room.GamePhase.INITIAL_STATE -> {
                         // do nothing
                     }
                     Room.GamePhase.WAITING_FOR_PLAYERS -> {
+                        binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
                         binding.tvCurWord.text = getString(R.string.waiting_for_players)
                         viewModel.cancelGamePhaseCountdownTimer()
                         viewModel.setConnectionProgressBarVisible(false)
-                        binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
                     }
                     Room.GamePhase.WAITING_FOR_START -> {
                         binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
                         binding.tvCurWord.text = getString(R.string.waiting_for_start)
                     }
                     Room.GamePhase.NEW_ROUND -> {
-                        gamePhaseUpdate.drawingPlayerName?.let { drawingPlayer ->
-                            binding.tvCurWord.text = getString(R.string.drawing_player_is_choosing_word, drawingPlayer)
-                        }
                         binding.apply {
+                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                            gamePhaseUpdate.drawingPlayerName?.let { drawingPlayerName ->
+                                tvCurWord.text = getString(R.string.drawing_player_is_choosing_word, drawingPlayerName)
+                            }
+
                             drawingView.isEnabled = false // no one can draw while the word is being chosen
                             selectColor(Color.BLACK) // reset drawing color to black
-                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             val isUserDrawingPlayer = gamePhaseUpdate.drawingPlayerName == args.playerName
-                            viewModel.setChooseWordOverlayVisible(isUserDrawingPlayer) // only the user can choose the word
+                            viewModel.setPickWordOverlayVisible(isUserDrawingPlayer) // only the user can choose the word
                         }
                     }
                     Room.GamePhase.ROUND_IN_PROGRESS -> {
-                        viewModel.setChooseWordOverlayVisible(false) // no one can choose the word anymore
                         binding.roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                        viewModel.setPickWordOverlayVisible(false) // no one can choose the word anymore
                     }
                     Room.GamePhase.ROUND_ENDED -> {
                         binding.apply {
+                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             drawingView.isEnabled = false // no one can draw while the word is being shown
                             selectColor(Color.BLACK) // reset drawing color to black
-                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
 
                             // Finish the drawing if the player is currently drawing. (Force the stop touch)
                             if (drawingView.isEnabled && drawingView.isDrawingToCanvasDrawing) {
 
                                 drawingView.apply {
 
-                                    // Send the closing ACTION_UP to the server
-                                    // todo can this be sent as an onTouchEvent & received normally by our listeners?
+                                    // Send the closing ACTION_UP message to the server
                                     viewModel.sendBaseMessageType(
                                         createDrawDataForServer(
                                             getCurrentX(),

@@ -198,7 +198,7 @@
             app:layout_constraintTop_toBottomOf="@+id/rvChat" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/chooseWordOverlay"
+                android:id="@+id/pick_word_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/overlay_color"
