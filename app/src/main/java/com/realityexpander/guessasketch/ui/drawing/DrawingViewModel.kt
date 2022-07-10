@@ -162,6 +162,7 @@ class DrawingViewModel @Inject constructor(
 
                         // If *NOT* WAITING_FOR_PLAYERS phase, set/sync timer to the GamePhaseUpdate
                         if (message.gamePhase != Room.GamePhase.WAITING_FOR_PLAYERS) {
+                            // sync local time to server timer
                             setGamePhaseCountdownTimer(message.countdownTimerMillis)
                         }
                     }

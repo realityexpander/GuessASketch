@@ -241,7 +241,7 @@ class DrawingActivity: AppCompatActivity() {
             viewModel.gamePhaseTime.collect { time ->
                 binding.roundTimerProgressBar.progress = time.toInt()  // uses `.max` value as maximum
 
-                binding.tvRemainingTimeChooseWord.text = (time/1000L).toString() // if its visible
+                binding.tvPickWordTimeRemaining.text = (time/1000L).toString() // if its visible
             }
         }
 
@@ -256,14 +256,20 @@ class DrawingActivity: AppCompatActivity() {
                         // do nothing
                     }
                     Room.GamePhase.WAITING_FOR_PLAYERS -> {
-                        binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
-                        binding.tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_players)
+                        binding.apply {
+                            roundTimerProgressBar.isIndeterminate = true
+                            tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_players)
+                        }
                         viewModel.cancelGamePhaseCountdownTimer()
                         viewModel.setConnectionProgressBarVisible(false)
                     }
                     Room.GamePhase.WAITING_FOR_START -> {
-                        binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
-                        binding.tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_start)
+                        binding.apply {
+                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt()
+                            roundTimerProgressBar.progress = roundTimerProgressBar.max
+                            roundTimerProgressBar.isIndeterminate = false
+                            tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_start)
+                        }
                     }
                     Room.GamePhase.NEW_ROUND -> {
                         binding.apply {
@@ -273,27 +279,31 @@ class DrawingActivity: AppCompatActivity() {
                             }
 
                             drawingView.isEnabled = false // no one can draw while the word is being chosen
+                            drawingView.clearDrawing() // clear the drawing view
                             selectColor(Color.BLACK) // reset drawing color to black
-                            val isUserDrawingPlayer = gamePhaseUpdate.drawingPlayerName == args.playerName
-                            viewModel.setPickWordOverlayVisible(isUserDrawingPlayer) // only the user can choose the word
+
+                            // Is this the drawing player? If yes, show the pick word overlay
+                            val isDrawingPlayer = gamePhaseUpdate.drawingPlayerName == args.playerName
+                            viewModel.setPickWordOverlayVisible(isDrawingPlayer) // only the drawing player can choose a word
                         }
                     }
                     Room.GamePhase.ROUND_IN_PROGRESS -> {
-                        binding.roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
-                        viewModel.setPickWordOverlayVisible(false) // no one can choose the word anymore
+                        binding.apply {
+                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                            viewModel.setPickWordOverlayVisible(false) // no one can choose the word anymore
 
-                        if(gamePhaseUpdate.drawingPlayerName == args.playerName) {
-                            binding.drawingView.isEnabled = true // only the drawingPlayer can draw
+                            if (gamePhaseUpdate.drawingPlayerName == args.playerName) {
+                                drawingView.isEnabled = true // only the drawingPlayer can draw
+                            }
                         }
                     }
                     Room.GamePhase.ROUND_ENDED -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             drawingView.isEnabled = false // no one can draw while the word is being shown
-                            selectColor(Color.BLACK) // reset drawing color to black
 
                             // Finish the drawing if the player is currently drawing. (Force the stop touch)
-                            if (drawingView.isEnabled && drawingView.isDrawingToCanvasDrawing) {
+                            if (drawingView.isCanvasDrawing) {
 
                                 drawingView.apply {
 

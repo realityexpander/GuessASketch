@@ -1,11 +1,14 @@
 package com.realityexpander.guessasketch.ui.adapters
 
+import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.Announcement
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.BaseMessageType
@@ -159,6 +162,7 @@ class ChatMessageAdapter constructor(
                                 tvTime.setTextColor(Color.WHITE)
                             }
                             Announcement.ANNOUNCEMENT_GENERAL_MESSAGE -> {
+                                root.setBackgroundColor(ContextCompat.getColor(holder.binding.root.context, R.color.yellow))
                                 // use default colors
                             }
                         }

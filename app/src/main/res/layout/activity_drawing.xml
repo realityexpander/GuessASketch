@@ -208,7 +208,7 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:visibility="gone">
+                tools:visibility="visible">
 
             <ImageView
                     android:id="@+id/ivHappyMonkey"
@@ -226,7 +226,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="@string/choose_your_word"
+                    android:text="@string/pick_your_word"
                     android:textSize="35sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
@@ -238,7 +238,7 @@
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
-                    android:text="First Word"
+                    tools:text="First Word"
                     app:layout_constraintBottom_toTopOf="@+id/btnSecondWord"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
@@ -251,7 +251,7 @@
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
-                    android:text="Second Word"
+                    tools:text="Second Word"
                     app:layout_constraintBottom_toTopOf="@+id/btnThirdWord"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
@@ -264,7 +264,7 @@
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
-                    android:text="Third Word"
+                    tools:text="Third Word"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
@@ -273,10 +273,10 @@
                     app:layout_constraintVertical_bias="0.3" />
 
             <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvRemainingTimeChooseWord"
+                    android:id="@+id/tv_pick_word_time_remaining"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="30"
+                    tools:text="30"
                     android:textSize="50sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
