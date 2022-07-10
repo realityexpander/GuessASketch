@@ -95,13 +95,13 @@
                 android:layout_height="wrap_content"
                 android:minHeight="10dp"
                 android:progress="100"
-                app:layout_constraintEnd_toEndOf="@id/tvCurWord"
-                app:layout_constraintStart_toStartOf="@id/tvCurWord"
+                app:layout_constraintEnd_toEndOf="@id/tv_word_to_guess_or_status_message"
+                app:layout_constraintStart_toStartOf="@id/tv_word_to_guess_or_status_message"
                 app:layout_constraintTop_toBottomOf="@id/drawingView"
                 tools:visibility="visible" />
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tvCurWord"
+            android:id="@+id/tv_word_to_guess_or_status_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -117,7 +117,7 @@
             app:layout_constraintBottom_toTopOf="@+id/tilMessage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/llActions"
-            app:layout_constraintTop_toBottomOf="@+id/tvCurWord"
+            app:layout_constraintTop_toBottomOf="@+id/tv_word_to_guess_or_status_message"
             app:layout_constraintVertical_bias="0.0" />
 
         <com.airbnb.lottie.LottieAnimationView
@@ -140,7 +140,7 @@
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@+id/tilMessage"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvCurWord">
+            app:layout_constraintTop_toBottomOf="@+id/tv_word_to_guess_or_status_message">
 
             <ImageButton
                 android:id="@+id/ibPlayers"

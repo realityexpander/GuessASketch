@@ -207,29 +207,29 @@ class DrawingActivity: AppCompatActivity() {
 
         // WordsToPickHolder -> SetWordToGuess
         lifecycleScope.launchWhenStarted {
-            viewModel.wordsToPickHolder.collect { wordsToPickHolder ->
-                val wordsToPick = wordsToPickHolder.words
-                if(wordsToPick.isEmpty()) return@collect
+            viewModel.wordsToPick.collect { wordsToPick ->
+                val words = wordsToPick.words
+                if(words.isEmpty()) return@collect
 
-                // Let player choose a new word to guess from the list of new words
+                // Let drawing player choose a word for other players to guess based on his drawing
                 binding.apply {
-                    btnFirstWord.text = wordsToPick[0]
-                    btnSecondWord.text = wordsToPick[1]
-                    btnThirdWord.text = wordsToPick[2]
+                    btnFirstWord.text = words[0]
+                    btnSecondWord.text = words[1]
+                    btnThirdWord.text = words[2]
                     viewModel.setPickWordOverlayVisible(true)
 
                     btnFirstWord.setOnClickListener {
-                        sendSetWordToGuessMessage(wordsToPick[0], args.roomName)
+                        sendSetWordToGuessMessage(words[0], args.roomName)
                         viewModel.setPickWordOverlayVisible(false)
                     }
 
                     btnSecondWord.setOnClickListener {
-                        sendSetWordToGuessMessage(wordsToPick[1], args.roomName)
+                        sendSetWordToGuessMessage(words[1], args.roomName)
                         viewModel.setPickWordOverlayVisible(false)
                     }
 
                     btnSecondWord.setOnClickListener {
-                        sendSetWordToGuessMessage(wordsToPick[2], args.roomName)
+                        sendSetWordToGuessMessage(words[2], args.roomName)
                         viewModel.setPickWordOverlayVisible(false)
                     }
                 }
@@ -257,19 +257,19 @@ class DrawingActivity: AppCompatActivity() {
                     }
                     Room.GamePhase.WAITING_FOR_PLAYERS -> {
                         binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
-                        binding.tvCurWord.text = getString(R.string.waiting_for_players)
+                        binding.tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_players)
                         viewModel.cancelGamePhaseCountdownTimer()
                         viewModel.setConnectionProgressBarVisible(false)
                     }
                     Room.GamePhase.WAITING_FOR_START -> {
                         binding.roundTimerProgressBar.progress = binding.roundTimerProgressBar.max
-                        binding.tvCurWord.text = getString(R.string.waiting_for_start)
+                        binding.tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_start)
                     }
                     Room.GamePhase.NEW_ROUND -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             gamePhaseUpdate.drawingPlayerName?.let { drawingPlayerName ->
-                                tvCurWord.text = getString(R.string.drawing_player_is_choosing_word, drawingPlayerName)
+                                tvWordToGuessOrStatusMessage.text = getString(R.string.drawing_player_is_choosing_word, drawingPlayerName)
                             }
 
                             drawingView.isEnabled = false // no one can draw while the word is being chosen
@@ -370,9 +370,9 @@ class DrawingActivity: AppCompatActivity() {
                     is ChatMessage -> {
                         addChatItemToChatMessagesAndScroll(message)
                     }
-                    is SetWordToGuess -> {
-                        // server will give "hidden" word to non-drawing players
-                        binding.tvCurWord.text = message.wordToGuess
+                    is GameState -> {
+                        // server will give "underscored" word to non-drawing players
+                        binding.tvWordToGuessOrStatusMessage.text = message.wordToGuess
 
                         // disable "undo" for everyone
                         // (will be re-enabled when player is drawing player)

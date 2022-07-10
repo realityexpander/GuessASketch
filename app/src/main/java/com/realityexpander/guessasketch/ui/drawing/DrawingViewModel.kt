@@ -45,9 +45,9 @@ class DrawingViewModel @Inject constructor(
     private val _chatMessages = MutableStateFlow<List<BaseMessageType>>(listOf())
     val chatMessages: StateFlow<List<BaseMessageType>> = _chatMessages
 
-    // New words (pick 3 words)
-    private val _wordsToPickHolder = MutableStateFlow(WordsToPickHolder(listOf()))
-    val wordsToPickHolder: StateFlow<WordsToPickHolder> = _wordsToPickHolder
+    // Words To Pick (3 words that the drawing player picks one of to draw)
+    private val _wordsToPick = MutableStateFlow(WordsToPick(listOf()))
+    val wordsToPick: StateFlow<WordsToPick> = _wordsToPick
 
     // Game Phase Change
     private val _gamePhaseChange = MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
@@ -137,12 +137,12 @@ class DrawingViewModel @Inject constructor(
                     is DrawAction,
                     is Announcement,
                     is ChatMessage,
-                    is SetWordToGuess,
+                    is GameState,
                     is GameError -> {
                         _socketBaseMessageEventChannel.send(message)
                     }
-                    is WordsToPickHolder -> {
-                        _wordsToPickHolder.value = message
+                    is WordsToPick -> {
+                        _wordsToPick.value = message
                         //_socketBaseMessageEventChannel.send(message)  // todo is this used at all? remove?
                     }
                     is Ping -> {
