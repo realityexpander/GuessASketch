@@ -211,7 +211,7 @@ class DrawingActivity: AppCompatActivity() {
                 val newWords = newWordsHolder.words
                 if(newWords.isEmpty()) return@collect
 
-                // Let player set a new word to guess
+                // Let player choose a new word to guess from the list of new words
                 binding.apply {
                     btnFirstWord.text = newWords[0]
                     btnSecondWord.text = newWords[1]
@@ -249,6 +249,7 @@ class DrawingActivity: AppCompatActivity() {
         // Game Phase Change (Update is handled in gamePhaseTime)
         lifecycleScope.launchWhenStarted {
             viewModel.gamePhaseChange.collect { gamePhaseUpdate ->
+
                 when(gamePhaseUpdate.gamePhase) {
                     Room.GamePhase.INITIAL_STATE -> {
                         // do nothing
@@ -285,13 +286,15 @@ class DrawingActivity: AppCompatActivity() {
                             selectColor(Color.BLACK) // reset drawing color to black
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
 
-                            // Finish the drawing if the player is drawing. (Force the stop touch)
-                            if (drawingView.isDrawing) {
+                            // Finish the drawing if the player is currently drawing. (Force the stop touch)
+                            if (drawingView.isEnabled && drawingView.isDrawing) {
 
                                 drawingView.apply {
+
                                     // Send the closing ACTION_UP to the server
+                                    // todo can this be sent as an onTouchEvent & received normally by our listeners?
                                     viewModel.sendBaseMessageType(
-                                        createDrawData(
+                                        createDrawDataForServer(
                                             getCurrentX(),
                                             getCurrentY(),
                                             getCurrentX(),
@@ -426,12 +429,12 @@ class DrawingActivity: AppCompatActivity() {
 
         // Listen to the touch events and send them to the server via sockets
         binding.drawingView.setOnTouchListener { _, event ->
-            // println("isEnabled=${binding.drawingView.isEnabled}, $event")
+            //println("isEnabled=${binding.drawingView.isEnabled}, $event")
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     viewModel.sendBaseMessageType(
-                        createDrawData(
+                        createDrawDataForServer(
                             event.x, event.y,
                             event.x, event.y,
                             DRAW_DATA_MOTION_EVENT_ACTION_DOWN
@@ -440,7 +443,7 @@ class DrawingActivity: AppCompatActivity() {
                 }
                 MotionEvent.ACTION_MOVE -> {
                     viewModel.sendBaseMessageType(
-                        createDrawData(
+                        createDrawDataForServer(
                             drawView.getCurrentX(), drawView.getCurrentY(),
                             event.x, event.y,
                             DRAW_DATA_MOTION_EVENT_ACTION_MOVE
@@ -449,7 +452,7 @@ class DrawingActivity: AppCompatActivity() {
                 }
                 MotionEvent.ACTION_UP -> {
                     viewModel.sendBaseMessageType(
-                        createDrawData(
+                        createDrawDataForServer(
                             drawView.getCurrentX(), drawView.getCurrentY(),
                             drawView.getCurrentX(), drawView.getCurrentY(),
                             DRAW_DATA_MOTION_EVENT_ACTION_UP
@@ -463,7 +466,7 @@ class DrawingActivity: AppCompatActivity() {
     }
 
     // Maps raw coordinates to relative coordinates (relative in the drawing view)
-    private fun createDrawData(
+    private fun createDrawDataForServer(
         fromX: Float, fromY: Float,
         toX: Float,   toY: Float,
         motionEvent: String

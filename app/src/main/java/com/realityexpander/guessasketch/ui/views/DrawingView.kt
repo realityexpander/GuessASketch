@@ -52,11 +52,11 @@ class DrawingView @JvmOverloads constructor(
     }
 
     fun getCurrentX(): Float {
-        return curX!!
+        return curX ?: 0.0f
     }
 
     fun getCurrentY(): Float {
-        return curY!!
+        return curY ?: 0.0f
     }
 
     fun getViewHeight(): Int {
