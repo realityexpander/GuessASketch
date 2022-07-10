@@ -162,8 +162,9 @@ class ChatMessageAdapter constructor(
                                 tvTime.setTextColor(Color.WHITE)
                             }
                             Announcement.ANNOUNCEMENT_GENERAL_MESSAGE -> {
-                                root.setBackgroundColor(ContextCompat.getColor(holder.binding.root.context, R.color.yellow))
-                                // use default colors
+                                root.setBackgroundColor(ContextCompat.getColor(
+                                    holder.binding.root.context, R.color.yellow
+                                ))
                             }
                         }
                     }
