@@ -114,6 +114,11 @@ class DrawingActivity: AppCompatActivity() {
             hideKeyboard(binding.root)
         }
 
+        // Drawing Path listener
+        binding.drawingView.setPathDataStackChangedListener { pathStack ->
+            viewModel.setPathStackData(pathStack)
+        }
+
         setupNavDrawer()
         setupChatMessageRecyclerView()
 

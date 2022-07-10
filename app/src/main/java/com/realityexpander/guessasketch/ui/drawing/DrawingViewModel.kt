@@ -7,6 +7,7 @@ import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.DrawingApi
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
+import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.CoroutineCountdownTimer
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import com.tinder.scarlet.WebSocket
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,34 +32,46 @@ class DrawingViewModel @Inject constructor(
     // UI State Events
 
     // Current selected "pick color" radio button
-    private val _selectedColorButtonId = MutableStateFlow(R.id.rbBlack)
+    private val _selectedColorButtonId =
+        MutableStateFlow(R.id.rbBlack)
     val selectedColorButtonId: StateFlow<Int> = _selectedColorButtonId
 
     // Connection Progress bar visibility
-    private val _connectionProgressBarVisible = MutableStateFlow(true)
+    private val _connectionProgressBarVisible =
+        MutableStateFlow(true)
     val connectionProgressBarVisible: StateFlow<Boolean> = _connectionProgressBarVisible
 
     // Choose Word Overlay visibility
-    private val _chooseWordOverlayVisible = MutableStateFlow(false)
+    private val _chooseWordOverlayVisible =
+        MutableStateFlow(false)
     val pickWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
 
     // Chat messages
-    private val _chatMessages = MutableStateFlow<List<BaseMessageType>>(listOf())
+    private val _chatMessages =
+        MutableStateFlow<List<BaseMessageType>>(listOf())
     val chatMessages: StateFlow<List<BaseMessageType>> = _chatMessages
 
     // Words To Pick (3 words that the drawing player picks one of to draw)
-    private val _wordsToPick = MutableStateFlow(WordsToPick(listOf()))
+    private val _wordsToPick =
+        MutableStateFlow(WordsToPick(listOf()))
     val wordsToPick: StateFlow<WordsToPick> = _wordsToPick
 
     // Game Phase Change
-    private val _gamePhaseChange = MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
+    private val _gamePhaseChange =
+        MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
     val gamePhaseChange: StateFlow<GamePhaseUpdate> = _gamePhaseChange
 
     // Game Phase Countdown Timer
     private val countdownTimer = CoroutineCountdownTimer()
     private var countdownTimerJob: Job? = null
-    private val _gamePhaseTime = MutableStateFlow(0L)
+    private val _gamePhaseTime =
+        MutableStateFlow(0L)
     val gamePhaseTime: StateFlow<Long> = _gamePhaseTime
+
+    // Drawing Path Change
+    private val _pathStackData =
+        MutableStateFlow(Stack<DrawingView.PathData>())
+    val pathStackData: StateFlow<Stack<DrawingView.PathData>> = _pathStackData
 
 
     //////////////////////////////
@@ -67,11 +81,13 @@ class DrawingViewModel @Inject constructor(
     data class MessageEvent<T: BaseMessageType>(val data: T, val type: String, val extra: String) //: SocketMessageEvent()
 
     // Socket connection events
-    private val _socketConnectionEventChannel = Channel<WebSocket.Event>()
+    private val _socketConnectionEventChannel =
+        Channel<WebSocket.Event>()
     val socketConnectionEvent = _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     // Socket BaseMessage events
-    private val _socketBaseMessageEventChannel = Channel<BaseMessageType>()
+    private val _socketBaseMessageEventChannel =
+        Channel<BaseMessageType>()
     val socketBaseMessageEvent = _socketBaseMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     //////////////////////////////
@@ -102,6 +118,10 @@ class DrawingViewModel @Inject constructor(
 
     fun selectColorRadioButton(id: Int) {
         _selectedColorButtonId.value = id
+    }
+
+    fun setPathStackData(stack: Stack<DrawingView.PathData>) {
+        _pathStackData.value = stack
     }
 
     private fun observeSocketConnectionEvents() {  // observeEvents - todo remove at end
