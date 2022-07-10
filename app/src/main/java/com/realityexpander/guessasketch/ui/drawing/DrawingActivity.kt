@@ -207,7 +207,7 @@ class DrawingActivity: AppCompatActivity() {
 
         // New Words -> SetWordToGuess
         lifecycleScope.launchWhenStarted {
-            viewModel.newWordsHolder.collect { newWordsHolder ->
+            viewModel.wordsToPickHolder.collect { newWordsHolder ->
                 val newWords = newWordsHolder.words
                 if(newWords.isEmpty()) return@collect
 
@@ -216,6 +216,7 @@ class DrawingActivity: AppCompatActivity() {
                     btnFirstWord.text = newWords[0]
                     btnSecondWord.text = newWords[1]
                     btnThirdWord.text = newWords[2]
+                    viewModel.setChooseWordOverlayVisible(true)
 
                     btnFirstWord.setOnClickListener {
                         sendSetWordToGuessMessage(newWords[0], args.roomName)
@@ -231,8 +232,6 @@ class DrawingActivity: AppCompatActivity() {
                         sendSetWordToGuessMessage(newWords[2], args.roomName)
                         viewModel.setChooseWordOverlayVisible(false)
                     }
-
-                    viewModel.setChooseWordOverlayVisible(true)
                 }
             }
         }
@@ -287,7 +286,7 @@ class DrawingActivity: AppCompatActivity() {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
 
                             // Finish the drawing if the player is currently drawing. (Force the stop touch)
-                            if (drawingView.isEnabled && drawingView.isDrawing) {
+                            if (drawingView.isEnabled && drawingView.isDrawingToCanvasDrawing) {
 
                                 drawingView.apply {
 

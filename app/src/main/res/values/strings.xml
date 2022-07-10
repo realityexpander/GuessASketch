@@ -28,7 +28,7 @@
     <string name="error_room_too_large">The maximum room size is %d.</string>
     <string name="drawing_player_is_choosing_word">%s is choosing a word...</string>
     <string name="waiting_for_players">Waiting for players...</string>
-    <string name="waiting_for_start">Waiting for start...</string>
+    <string name="waiting_for_start">Waiting for for more players to join...</string>
     <string name="check_internet_connection">Couldn\'t reach server. Check your internet connection.</string>
     <string name="error_http">Something went wrong. Please try again later.</string>
     <string name="error_internet_turned_off">This app requires an active internet connection to be used.</string>

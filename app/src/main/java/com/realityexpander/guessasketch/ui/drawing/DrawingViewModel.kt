@@ -46,8 +46,8 @@ class DrawingViewModel @Inject constructor(
     val chatMessages: StateFlow<List<BaseMessageType>> = _chatMessages
 
     // New words (pick 3 words)
-    private val _newWordsHolder = MutableStateFlow(NewWordsHolder(listOf()))
-    val newWordsHolder: StateFlow<NewWordsHolder> = _newWordsHolder
+    private val _wordsToPickHolder = MutableStateFlow(WordsToPickHolder(listOf()))
+    val wordsToPickHolder: StateFlow<WordsToPickHolder> = _wordsToPickHolder
 
     // Game Phase Change
     private val _gamePhaseChange = MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
@@ -142,8 +142,8 @@ class DrawingViewModel @Inject constructor(
                     is GameError -> {
                         _socketBaseMessageEventChannel.send(message)
                     }
-                    is NewWordsHolder -> {
-                        _newWordsHolder.value = message
+                    is WordsToPickHolder -> {
+                        _wordsToPickHolder.value = message
                         //_socketBaseMessageEventChannel.send(message)  // todo is this used at all? remove?
                     }
                     is Ping -> {
@@ -189,7 +189,7 @@ class DrawingViewModel @Inject constructor(
     // Send messages to the socket for the server to handle
     fun sendBaseMessageType(data: BaseMessageType) {
         viewModelScope.launch(dispatcher.io) {
-            // println("Sending message: $message")
+            println("Sending message: $data")
             drawingApi.sendBaseMessage(data)
         }
     }

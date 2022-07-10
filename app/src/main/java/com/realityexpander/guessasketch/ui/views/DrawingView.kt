@@ -23,7 +23,7 @@ class DrawingView @JvmOverloads constructor(
     private var curY: Float? = null
     private var smoothness = 5
 
-    var isDrawing = false
+    var isDrawingToCanvasDrawing = false
 
     private var paint = Paint(Paint.DITHER_FLAG).apply {
         isDither = true
@@ -118,7 +118,7 @@ class DrawingView @JvmOverloads constructor(
         val initialThickness = paint.strokeWidth
 
         // Fresh canvas
-        if (paths.size == 0 && !isDrawing) {
+        if (paths.size == 0 && !isDrawingToCanvasDrawing) {
             canvas?.drawColor(Color.WHITE)
            return
         }
@@ -134,7 +134,7 @@ class DrawingView @JvmOverloads constructor(
         }
 
         // Draw the current path the player is drawing (active path)
-        if (isDrawing) {
+        if (isDrawingToCanvasDrawing) {
             paint.apply {
                 color = initialColor
                 strokeWidth = initialThickness
@@ -146,7 +146,7 @@ class DrawingView @JvmOverloads constructor(
 
     //// DRAWING METHODS ////
 
-    var isStarted = false  // fixes Android bug where ACTION_MOVE is called after ACTION_UP
+    var isDrawingToCanvasStarted = false  // fixes Android bug where ACTION_MOVE is called after ACTION_UP
 
     private fun startTouch(x: Float, y: Float) {
         path = Path()  // Start a new path at the current point
@@ -155,12 +155,12 @@ class DrawingView @JvmOverloads constructor(
         curX = x
         curY = y
 
-        isStarted = true
+        isDrawingToCanvasStarted = true
         invalidate() // trigger onDraw()
     }
 
     private fun moveTouch(toX: Float, toY: Float) {
-        if(!isStarted) return
+        if(!isDrawingToCanvasStarted) return
 
         val currX = curX ?: return
         val currY = curY ?: return
@@ -174,7 +174,7 @@ class DrawingView @JvmOverloads constructor(
             curX = toX
             curY = toY
 
-            isDrawing = true
+            isDrawingToCanvasDrawing = true
             invalidate()
         }
     }
@@ -182,7 +182,7 @@ class DrawingView @JvmOverloads constructor(
     private fun stopTouch() {
         curX ?: return
         curY ?: return
-        if(!isStarted) return
+        if(!isDrawingToCanvasStarted) return
 
         path.lineTo(curX!!, curY!!)         // todo remove the null checks
         path.setLastPoint(curX!!, curY!!)
@@ -193,8 +193,8 @@ class DrawingView @JvmOverloads constructor(
             pathDataChanged(paths)
         }
 
-        isDrawing = false
-        isStarted = false
+        isDrawingToCanvasStarted = false
+        isDrawingToCanvasDrawing = false
         invalidate()
     }
 
