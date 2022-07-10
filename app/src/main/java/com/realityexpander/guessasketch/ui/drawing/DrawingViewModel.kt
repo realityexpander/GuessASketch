@@ -59,11 +59,12 @@ class DrawingViewModel @Inject constructor(
     private val _gamePhaseTime = MutableStateFlow(0L)
     val gamePhaseTime: StateFlow<Long> = _gamePhaseTime
 
+
     //////////////////////////////
     // WebSocket events
 
     // Can use this to wrap the websocket messagesTypes with more data (if necessary)
-    data class MessageEvent<T: BaseMessageType>(val data: T, val type: String) //: SocketMessageEvent()
+    data class MessageEvent<T: BaseMessageType>(val data: T, val type: String, val extra: String) //: SocketMessageEvent()
 
     // Socket connection events
     private val _socketConnectionEventChannel = Channel<WebSocket.Event>()
