@@ -44,7 +44,7 @@ import javax.inject.Named
 typealias ColorInt = Int // like @ColorInt
 typealias ResId = Int // like @ResId
 
-const val CAN_SCROLL_DOWN = 1 // for if messages are received while scrolling down
+const val CAN_SCROLL_DOWN = 1 // List scroll position is NOT at the bottom, ie: Can scroll down if needed
 
 @AndroidEntryPoint
 class DrawingActivity: AppCompatActivity() {
@@ -290,7 +290,7 @@ class DrawingActivity: AppCompatActivity() {
                     Room.GamePhase.ROUND_IN_PROGRESS -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
-                            viewModel.setPickWordOverlayVisible(false) // no one can choose the word anymore
+                            viewModel.setPickWordOverlayVisible(false) // no one can pick the word anymore
 
                             if (gamePhaseUpdate.drawingPlayerName == args.playerName) {
                                 drawingView.isEnabled = true // only the drawingPlayer can draw
@@ -302,7 +302,7 @@ class DrawingActivity: AppCompatActivity() {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             drawingView.isEnabled = false // no one can draw while the word is being shown
 
-                            // Finish the drawing if the player is currently drawing. (Force the stop touch)
+                            // Finish the drawing if the player is currently drawing. (Force the stopTouch)
                             if (drawingView.isCanvasDrawing) {
 
                                 drawingView.apply {
@@ -332,7 +332,6 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
-    // Listen to socket messages from the server
     private fun listenToSocketBaseMessageEvents() {
         lifecycleScope.launchWhenStarted {
             viewModel.socketBaseMessageEvent.collect { message ->
@@ -401,7 +400,6 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
-    // Listen to socket connection events
     private fun listenToSocketConnectionEvents() = lifecycleScope.launchWhenStarted {
         viewModel.socketConnectionEvent.collect  { event ->
             when(event) {
@@ -425,18 +423,6 @@ class DrawingActivity: AppCompatActivity() {
                 }
             }
         }
-    }
-
-    // Select the drawing color of the drawing view
-    private fun selectColor(color: Int) {
-        curDrawingColor = color
-
-        binding.drawingView.setColor(color)
-
-        // in case user has just used the eraser
-        binding.drawingView.setStrokeWidth(Constants.DEFAULT_PAINT_STROKE_WIDTH)
-
-        selectColorRadioButtonForColor(color) // update radio button selection
     }
 
     @SuppressLint("ClickableViewAccessibility")  // for onTouchListener not implementing performClick()
@@ -546,8 +532,20 @@ class DrawingActivity: AppCompatActivity() {
         }
     }
 
+    // Select the drawing color of the drawing view
+    private fun selectColor(color: ColorInt) {
+        curDrawingColor = color
+
+        binding.drawingView.setColor(color)
+
+        // in case user has just used the eraser
+        binding.drawingView.setStrokeWidth(Constants.DEFAULT_PAINT_STROKE_WIDTH)
+
+        selectColorRadioButtonForColor(color) // update radio button selection
+    }
+
     // Select the radio button for a given color
-    private fun selectColorRadioButtonForColor(color: Int) {
+    private fun selectColorRadioButtonForColor(color: ColorInt) {
         binding.colorGroup.check(
             resourceColorToButtonIdMap[color] ?: R.id.rbBlack
         )
@@ -571,7 +569,7 @@ class DrawingActivity: AppCompatActivity() {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
-    // For ActionBarDrawer
+    // For ActionBarDrawer  // todo is this used? remove?
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(toggleDrawer.onOptionsItemSelected(item)) {
             return true
@@ -592,6 +590,7 @@ class DrawingActivity: AppCompatActivity() {
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
     }
 
+    // todo put this job in the adapter?
     private var updateChatMessagesJob: Job? = null // for cancelling the update job when new messages are received
     private fun updateChatMessagesList(chatList: List<BaseMessageType>) {
         updateChatMessagesJob?.cancel() // cancel the previous job if it exists
