@@ -1,5 +1,6 @@
 package com.realityexpander.guessasketch.data.remote.ws.messageTypes
 
+import com.realityexpander.guessasketch.data.remote.common.PlayerData
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessageType.TYPE_PLAYERS_LIST
 
 data class PlayersList(

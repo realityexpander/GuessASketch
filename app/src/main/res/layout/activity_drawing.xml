@@ -143,7 +143,7 @@
             app:layout_constraintTop_toBottomOf="@+id/tv_word_to_guess_or_status_message">
 
             <ImageButton
-                android:id="@+id/ibPlayers"
+                android:id="@+id/ib_players_drawer_open"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_person"

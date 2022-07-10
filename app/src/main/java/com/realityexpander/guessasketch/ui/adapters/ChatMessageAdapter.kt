@@ -113,7 +113,7 @@ class ChatMessageAdapter constructor(
                 holder.binding.apply {
                     (chatItem as ChatMessage).let { chatMessage ->
                         tvMessage.text = chatMessage.message
-                        tvUsername.text = chatMessage.fromPlayerName
+                        tvPlayername.text = chatMessage.fromPlayerName
                         tvTime.text = chatMessage.timestamp.toTimeString()
                     }
                 }
@@ -122,7 +122,7 @@ class ChatMessageAdapter constructor(
                 holder.binding.apply {
                     (chatItem as ChatMessage).let { chatMessage ->
                         tvMessage.text = chatMessage.message
-                        tvUsername.text = playerName
+                        tvPlayername.text = playerName
                         tvTime.text = chatMessage.timestamp.toTimeString()
                     }
                 }

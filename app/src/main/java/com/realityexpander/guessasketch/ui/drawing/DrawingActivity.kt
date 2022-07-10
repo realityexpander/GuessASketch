@@ -30,6 +30,7 @@ import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Com
 import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
 import com.realityexpander.guessasketch.di.CLIENT_ID
 import com.realityexpander.guessasketch.ui.adapters.ChatMessageAdapter
+import com.realityexpander.guessasketch.ui.adapters.PlayerAdapter
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.hideKeyboard
@@ -55,20 +56,25 @@ class DrawingActivity: AppCompatActivity() {
     private val viewModel: DrawingViewModel by viewModels()
     private val args by navArgs<DrawingActivityArgs>()
 
-    private lateinit var resourceColorToButtonIdMap: Map<Int, Int>
-
-    private var curDrawingColor: Int = Color.BLACK
-
-    private lateinit var chatMessageAdapter: ChatMessageAdapter
-
     @Inject
     @Named(CLIENT_ID)
     lateinit var clientId: String
 
+    private var isDrawingPlayer = false
+
+    // Color radio buttons
+    private lateinit var resourceColorToButtonIdMap: Map<Int, Int>
+    private var curDrawingColor: Int = Color.BLACK
+
+    // Chat message list
+    private lateinit var chatMessageAdapter: ChatMessageAdapter
+
+    // Drawer menu (List of players, rank, score)
     private lateinit var toggleDrawer: ActionBarDrawerToggle
     private lateinit var rvPlayers: RecyclerView
+    @Inject
+    lateinit var rvPlayersAdapter: PlayerAdapter
 
-    private var isDrawingPlayer = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -144,15 +150,14 @@ class DrawingActivity: AppCompatActivity() {
     private fun setupNavDrawer() {
         toggleDrawer = ActionBarDrawerToggle(this, binding.root, R.string.open, R.string.close)
         toggleDrawer.syncState()
+
         val navHeader = layoutInflater.inflate(R.layout.nav_drawer_header, binding.navView)
         rvPlayers = navHeader.findViewById(R.id.rvPlayers)
         binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED) // only can be opened by clicking the "players" button
-
-        binding.ibPlayers.setOnClickListener {
+        binding.ibPlayersDrawerOpen.setOnClickListener {
             binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
             binding.root.openDrawer(GravityCompat.START)
         }
-
         binding.root.addDrawerListener( object : DrawerLayout.DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) = Unit
             override fun onDrawerOpened(drawerView: View) = Unit
@@ -164,6 +169,13 @@ class DrawingActivity: AppCompatActivity() {
             }
 
         })
+
+        // setup the recycler view for the list of players
+        rvPlayers.apply {
+            layoutManager = LinearLayoutManager(this@DrawingActivity)
+            adapter = rvPlayersAdapter
+        }
+
     }
 
     // subscribe to UI state updates from the view model
