@@ -134,16 +134,22 @@ class ChatMessageAdapter constructor(
 
                         when(announcement.announcementType) {
                             Announcement.ANNOUNCEMENT_EVERYBODY_GUESSED_CORRECTLY -> {
-                                root.setBackgroundColor(Color.LTGRAY)
+                                root.setBackgroundColor(Color.GREEN)
+                                tvAnnouncement.setTextColor(Color.WHITE)
                             }
                             Announcement.ANNOUNCEMENT_PLAYER_GUESSED_CORRECTLY -> {
                                 root.setBackgroundColor(Color.YELLOW)
                             }
                             Announcement.ANNOUNCEMENT_PLAYER_JOINED_ROOM -> {
                                 root.setBackgroundColor(Color.GREEN)
+                                tvAnnouncement.setTextColor(Color.WHITE)
                             }
                             Announcement.ANNOUNCEMENT_PLAYER_EXITED_ROOM -> {
                                 root.setBackgroundColor(Color.RED)
+                                tvAnnouncement.setTextColor(Color.WHITE)
+                            }
+                            Announcement.ANNOUNCEMENT_NOBODY_GUESSED_CORRECTLY -> {
+                                root.setBackgroundColor(Color.BLUE)
                                 tvAnnouncement.setTextColor(Color.WHITE)
                             }
                         }

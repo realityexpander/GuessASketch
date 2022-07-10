@@ -228,7 +228,7 @@ class DrawingActivity: AppCompatActivity() {
                         viewModel.setPickWordOverlayVisible(false)
                     }
 
-                    btnSecondWord.setOnClickListener {
+                    btnThirdWord.setOnClickListener {
                         sendSetWordToGuessMessage(words[2], args.roomName)
                         viewModel.setPickWordOverlayVisible(false)
                     }
