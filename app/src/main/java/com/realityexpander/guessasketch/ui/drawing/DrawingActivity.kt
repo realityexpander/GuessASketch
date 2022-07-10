@@ -281,6 +281,10 @@ class DrawingActivity: AppCompatActivity() {
                     Room.GamePhase.ROUND_IN_PROGRESS -> {
                         binding.roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                         viewModel.setPickWordOverlayVisible(false) // no one can choose the word anymore
+
+                        if(gamePhaseUpdate.drawingPlayerName == args.playerName) {
+                            binding.drawingView.isEnabled = true // only the drawingPlayer can draw
+                        }
                     }
                     Room.GamePhase.ROUND_ENDED -> {
                         binding.apply {

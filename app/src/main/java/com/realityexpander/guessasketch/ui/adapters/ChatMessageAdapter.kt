@@ -158,6 +158,9 @@ class ChatMessageAdapter constructor(
                                 tvAnnouncement.setTextColor(Color.WHITE)
                                 tvTime.setTextColor(Color.WHITE)
                             }
+                            Announcement.ANNOUNCEMENT_GENERAL_MESSAGE -> {
+                                // use default colors
+                            }
                         }
                     }
                 }
