@@ -11,6 +11,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.navArgs
@@ -66,6 +67,8 @@ class DrawingActivity: AppCompatActivity() {
 
     private lateinit var toggleDrawer: ActionBarDrawerToggle
     private lateinit var rvPlayers: RecyclerView
+
+    private var isDrawingPlayer = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -250,7 +253,29 @@ class DrawingActivity: AppCompatActivity() {
             }
         }
 
-        // Game Phase Change (Update is handled in gamePhaseTime)
+        // Game State Update
+        lifecycleScope.launchWhenStarted {
+            viewModel.gameState.collect { gameState ->
+                binding.apply {
+                    // Gives the "word to guess" actual word to the drawing player.
+                    // Server will send the "underscored" word to non-drawing players.
+                    tvWordToGuessOrStatusMessage.text = gameState.wordToGuess
+
+                    // Set these again (in case of config change)
+                    isDrawingPlayer = gameState.drawingPlayerName == args.playerName  // todo check for clientId not playerName
+                    setColorButtonGroupIsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
+                    drawingView.isEnabled = isDrawingPlayer
+
+                    ibMic.isVisible = !isDrawingPlayer // only the guessing players can use the mic
+
+                    // NOTE: drawing player can still use the chat Messages
+                    // todo should this be turned off for drawing player?
+                    // setChatMessageInputIsVisible(!isDrawingPlayer)
+                }
+            }
+        }
+
+        // Game Phase Change (Updates are handled in gamePhaseTime)
         lifecycleScope.launchWhenStarted {
             viewModel.gamePhaseChange.collect { gamePhaseUpdate ->
 
@@ -259,6 +284,9 @@ class DrawingActivity: AppCompatActivity() {
                 when(gamePhaseUpdate.gamePhase) {
                     Room.GamePhase.INITIAL_STATE -> {
                         // do nothing
+
+                        setColorButtonGroupIsVisible(false)
+                        setChatMessageInputIsVisible(false)
                     }
                     Room.GamePhase.WAITING_FOR_PLAYERS -> {
                         binding.apply {
@@ -267,6 +295,7 @@ class DrawingActivity: AppCompatActivity() {
                         }
                         viewModel.cancelGamePhaseCountdownTimer()
                         viewModel.setConnectionProgressBarVisible(false)
+                        setChatMessageInputIsVisible(true)
                     }
                     Room.GamePhase.WAITING_FOR_START -> {
                         binding.apply {
@@ -274,6 +303,7 @@ class DrawingActivity: AppCompatActivity() {
                             roundTimerProgressBar.progress = roundTimerProgressBar.max
                             roundTimerProgressBar.isIndeterminate = false
                             tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_start)
+                            setChatMessageInputIsVisible(true)
                         }
                     }
                     Room.GamePhase.NEW_ROUND -> {
@@ -288,17 +318,25 @@ class DrawingActivity: AppCompatActivity() {
                             selectColor(Color.BLACK) // reset drawing color to black
 
                             // Is this the drawing player? If yes, show the pick word overlay
-                            val isDrawingPlayer = gamePhaseUpdate.drawingPlayerName == args.playerName
+                            isDrawingPlayer = gamePhaseUpdate.drawingPlayerName == args.playerName
                             viewModel.setPickWordOverlayVisible(isDrawingPlayer) // only the drawing player can choose a word
+
+                            // disable "undo" for everyone
+                            // (will be re-enabled when player is drawing player)
+                            ibUndo.isEnabled = false
+
+                            setChatMessageInputIsVisible(true)
                         }
                     }
                     Room.GamePhase.ROUND_IN_PROGRESS -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             viewModel.setPickWordOverlayVisible(false) // no one can pick the word anymore
+                            setChatMessageInputIsVisible(true)
 
                             if (gamePhaseUpdate.drawingPlayerName == args.playerName) {
                                 drawingView.isEnabled = true // only the drawingPlayer can draw
+                                ibUndo.isEnabled = false // only the drawingPlayer can undo
                             }
                         }
                     }
@@ -306,6 +344,8 @@ class DrawingActivity: AppCompatActivity() {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             drawingView.isEnabled = false // no one can draw while the word is being shown
+                            setColorButtonGroupIsVisible(false) // no one can change the drawing color
+                            setChatMessageInputIsVisible(true)
 
                             // Finish the drawing if the player is currently drawing. (Force the stopTouch)
                             if (drawingView.isCanvasDrawing) {
@@ -387,14 +427,6 @@ class DrawingActivity: AppCompatActivity() {
                     }
                     is ChatMessage -> {
                         addChatItemToChatMessagesAndScroll(message)
-                    }
-                    is GameState -> {
-                        // server will give "underscored" word to non-drawing players
-                        binding.tvWordToGuessOrStatusMessage.text = message.wordToGuess
-
-                        // disable "undo" for everyone
-                        // (will be re-enabled when player is drawing player)
-                        binding.ibUndo.isEnabled = false
                     }
                     else -> {
                         Timber.DebugTree().e("DrawingActivity - Unexpected BaseMessage type: ${message.type}")
@@ -570,6 +602,11 @@ class DrawingActivity: AppCompatActivity() {
         )
     }
 
+    private fun setColorButtonGroupIsVisible(isVisible: Boolean) {
+        binding.colorGroup.isVisible = isVisible
+        binding.ibUndo.isVisible = isVisible
+    }
+
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
@@ -624,6 +661,12 @@ class DrawingActivity: AppCompatActivity() {
             // scroll to the last item
             binding.rvChat.scrollToPosition(chatMessageAdapter.chatItems.size - 1)
         }
+    }
+
+    private fun setChatMessageInputIsVisible(isVisible: Boolean) {
+        binding.tilMessage.isVisible = isVisible
+        binding.ibSend.isVisible = isVisible
+        binding.ibClearText.isVisible = isVisible
     }
 
     private fun sendSetWordToGuessMessage(word: String, roomName: String) {

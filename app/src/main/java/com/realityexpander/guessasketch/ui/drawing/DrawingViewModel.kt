@@ -19,6 +19,9 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
+// StateFlow current value is re-emitted after configuration change.
+// Channels are "hot" and NOT re-emitted after configuration change.
+
 @HiltViewModel
 class DrawingViewModel @Inject constructor(
     private val drawingApi: DrawingApi,
@@ -68,7 +71,12 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(0L)
     val gamePhaseTime: StateFlow<Long> = _gamePhaseTime
 
-    // Drawing Path Change
+    // Game State
+    private val _gameState =
+        MutableStateFlow(GameState("","",""))
+    val gameState: StateFlow<GameState> = _gameState
+
+    // Drawing Path Stack Update
     private val _pathStackData =
         MutableStateFlow(Stack<DrawingView.PathData>())
     val pathStackData: StateFlow<Stack<DrawingView.PathData>> = _pathStackData
@@ -152,15 +160,20 @@ class DrawingViewModel @Inject constructor(
 
                 // println("observeSocketBaseMessages - message: $message")
 
-                // Filter messages to be sent to the activity or handled here in the viewModel
+                // Filter messages:
+                //   1) to be sent to the activity,
+                //   2) or handled here in the viewModel.
                 when(message) {
                     is DrawData,
                     is DrawAction,
                     is Announcement,
                     is ChatMessage,
-                    is GameState,
                     is GameError -> {
                         _socketBaseMessageEventChannel.send(message)
+                    }
+                    is GameState -> {
+                        _gameState.value = message
+                        _socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
                     }
                     is WordsToPick -> {
                         _wordsToPick.value = message
