@@ -128,29 +128,35 @@ class ChatMessageAdapter constructor(
                 holder.binding.apply {
                     (chatItem as Announcement).let { announcement ->
                         tvAnnouncement.text = announcement.message
-                        tvAnnouncement.setTextColor(Color.BLACK)
                         tvTime.text = announcement.timestamp.toTimeString()
+                        tvAnnouncement.setTextColor(Color.BLACK)
                         tvTime.setTextColor(Color.BLACK)
 
                         when(announcement.announcementType) {
                             Announcement.ANNOUNCEMENT_EVERYBODY_GUESSED_CORRECTLY -> {
                                 root.setBackgroundColor(Color.GREEN)
                                 tvAnnouncement.setTextColor(Color.WHITE)
+                                tvTime.setTextColor(Color.WHITE)
                             }
                             Announcement.ANNOUNCEMENT_PLAYER_GUESSED_CORRECTLY -> {
                                 root.setBackgroundColor(Color.YELLOW)
+                                tvAnnouncement.setTextColor(Color.BLACK)
+                                tvTime.setTextColor(Color.BLACK)
                             }
                             Announcement.ANNOUNCEMENT_PLAYER_JOINED_ROOM -> {
                                 root.setBackgroundColor(Color.GREEN)
                                 tvAnnouncement.setTextColor(Color.WHITE)
+                                tvTime.setTextColor(Color.WHITE)
                             }
                             Announcement.ANNOUNCEMENT_PLAYER_EXITED_ROOM -> {
                                 root.setBackgroundColor(Color.RED)
-                                tvAnnouncement.setTextColor(Color.WHITE)
+                                tvAnnouncement.setTextColor(Color.BLACK)
+                                tvTime.setTextColor(Color.BLACK)
                             }
                             Announcement.ANNOUNCEMENT_NOBODY_GUESSED_CORRECTLY -> {
                                 root.setBackgroundColor(Color.BLUE)
                                 tvAnnouncement.setTextColor(Color.WHITE)
+                                tvTime.setTextColor(Color.WHITE)
                             }
                         }
                     }

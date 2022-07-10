@@ -110,15 +110,15 @@
             app:layout_constraintTop_toBottomOf="@+id/roundTimerProgressBar" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvChat"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            tools:listitem="@layout/item_announcement"
-            app:layout_constraintBottom_toTopOf="@+id/tilMessage"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/llActions"
-            app:layout_constraintTop_toBottomOf="@+id/tv_word_to_guess_or_status_message"
-            app:layout_constraintVertical_bias="0.0" />
+                android:id="@+id/rvChat"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@+id/tilMessage"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/llActions"
+                app:layout_constraintTop_toBottomOf="@+id/tv_word_to_guess_or_status_message"
+                app:layout_constraintVertical_bias="0.0"
+                tools:listitem="@layout/item_announcement" />
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/connectionProgressBar"
