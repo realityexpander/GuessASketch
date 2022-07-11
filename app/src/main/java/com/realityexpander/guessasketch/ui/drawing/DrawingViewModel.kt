@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.realityexpander.guessasketch.R
+import com.realityexpander.guessasketch.data.remote.common.PlayerData
 import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.DrawingApi
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
@@ -81,6 +82,11 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(Stack<DrawingView.PathData>())
     val pathStackData: StateFlow<Stack<DrawingView.PathData>> = _pathStackData
 
+    // Players List (list of PlayerData)
+    // Words To Pick (3 words that the drawing player picks one of to draw)
+    private val _playersList =
+        MutableStateFlow(PlayersList(listOf()))
+    val playersList: StateFlow<PlayersList> = _playersList
 
     //////////////////////////////
     // WebSocket events
@@ -173,6 +179,10 @@ class DrawingViewModel @Inject constructor(
                     }
                     is GameState -> {
                         _gameState.value = message
+                        _socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
+                    }
+                    is PlayersList -> {
+                        _playersList.value = message
                         _socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
                     }
                     is WordsToPick -> {

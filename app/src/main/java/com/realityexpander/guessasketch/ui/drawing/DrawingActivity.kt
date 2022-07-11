@@ -21,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_UNDO
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_DOWN
 import com.realityexpander.guessasketch.R
+import com.realityexpander.guessasketch.data.remote.common.PlayerData
 import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_DRAW
@@ -67,13 +68,13 @@ class DrawingActivity: AppCompatActivity() {
     private var curDrawingColor: Int = Color.BLACK
 
     // Chat message list
-    private lateinit var chatMessageAdapter: ChatMessageAdapter
+    private lateinit var rvChatMessageAdapter: ChatMessageAdapter
 
     // Drawer menu (List of players, rank, score)
     private lateinit var toggleDrawer: ActionBarDrawerToggle
-    private lateinit var rvPlayers: RecyclerView
-    @Inject
+    @Inject  // because the PlayerAdapter constructor as no args, we have injected it
     lateinit var rvPlayersAdapter: PlayerAdapter
+    // private lateinit var rvPlayers: RecyclerView  // not needed?
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,9 +83,6 @@ class DrawingActivity: AppCompatActivity() {
         setContentView(binding.root)
 
         viewModel.playerName = args.playerName
-
-//        // "test" playerName is the drawing player - for testing -- remove todo
-//        binding.drawingView.isEnabled = args.playerName == "test"
 
         // Select the color of the drawing player's pen
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -128,6 +126,7 @@ class DrawingActivity: AppCompatActivity() {
             viewModel.setPathStackData(pathStack)
         }
 
+
         setupNavDrawer()
         setupChatMessageRecyclerView()
 
@@ -152,7 +151,6 @@ class DrawingActivity: AppCompatActivity() {
         toggleDrawer.syncState()
 
         val navHeader = layoutInflater.inflate(R.layout.nav_drawer_header, binding.navView)
-        rvPlayers = navHeader.findViewById(R.id.rvPlayers)
         binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED) // only can be opened by clicking the "players" button
         binding.ibPlayersDrawerOpen.setOnClickListener {
             binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
@@ -170,7 +168,9 @@ class DrawingActivity: AppCompatActivity() {
 
         })
 
-        // setup the recycler view for the list of players
+        // Setup the recycler view for the list of players
+        //   note: because the PlayerAdapter constructor as no args, we have injected it (see @Inject)
+        val rvPlayers = navHeader.findViewById<RecyclerView>(R.id.rvPlayers)
         rvPlayers.apply {
             layoutManager = LinearLayoutManager(this@DrawingActivity)
             adapter = rvPlayersAdapter
@@ -217,10 +217,8 @@ class DrawingActivity: AppCompatActivity() {
         // Chat messages
         lifecycleScope.launchWhenStarted {
             viewModel.chatMessages.collect { chatItems ->
-                if(chatMessageAdapter.chatItems.isEmpty()) {
+                if(rvChatMessageAdapter.chatItems.isEmpty()) {
                     updateChatMessagesList(chatItems)
-                } else {
-                    //addChatItemToChatMessagesAndScroll(chatItems)
                 }
             }
         }
@@ -384,6 +382,15 @@ class DrawingActivity: AppCompatActivity() {
                     else -> {
                         Timber.DebugTree().e("DrawingActivity - Unexpected GamePhaseUpdate type: ${gamePhaseUpdate.gamePhase}")
                     }
+                }
+            }
+        }
+
+        // Players List Update
+        lifecycleScope.launchWhenStarted {
+            viewModel.playersList.collect { playersList ->
+                binding.apply {
+                    updatePlayersList(playersList.players)
                 }
             }
         }
@@ -635,12 +642,12 @@ class DrawingActivity: AppCompatActivity() {
         binding.rvChat.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@DrawingActivity)
-            chatMessageAdapter = ChatMessageAdapter(args.playerName, clientId)
-            adapter = chatMessageAdapter
+            rvChatMessageAdapter = ChatMessageAdapter(args.playerName, clientId)
+            adapter = rvChatMessageAdapter
         }
 
         // Only restore the RV state when the list is empty
-        chatMessageAdapter.stateRestorationPolicy =
+        rvChatMessageAdapter.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
     }
 
@@ -649,7 +656,19 @@ class DrawingActivity: AppCompatActivity() {
     private fun updateChatMessagesList(chatList: List<BaseMessageType>) {
         updateChatMessagesJob?.cancel() // cancel the previous job if it exists
         updateChatMessagesJob = lifecycleScope.launch {
-            chatMessageAdapter.updateDataset(chatList)
+            rvChatMessageAdapter.updateDataset(chatList)
+        }
+
+        // Handle the job & cancellation in the RV (not here in the activity)
+        // chatMessageAdapter.updateChatMessageList(chatList, lifecycleScope) // replace at end todo
+    }
+
+    // todo put this job in the adapter?
+    private var updatePlayersListJob: Job? = null // for cancelling the update job when new messages are received
+    private fun updatePlayersList(players: List<PlayerData>) {
+        updatePlayersListJob?.cancel() // cancel the previous job if it exists
+        updatePlayersListJob = lifecycleScope.launch {
+            rvPlayersAdapter.updateDataset(players)
         }
 
         // Handle the job & cancellation in the RV (not here in the activity)
@@ -663,7 +682,7 @@ class DrawingActivity: AppCompatActivity() {
         val isScrolledToBottom = !binding.rvChat.canScrollVertically(CAN_SCROLL_DOWN)
 
         // Add the chat item to the bottom of the chat messages list
-        updateChatMessagesList(chatMessageAdapter.chatItems + chatItem)
+        updateChatMessagesList(rvChatMessageAdapter.chatItems + chatItem)
 
         // wait for the update job to finish before (possibly) scrolling down to see the new message.
         updateChatMessagesJob?.join()
@@ -671,7 +690,7 @@ class DrawingActivity: AppCompatActivity() {
         // Is the user scrolled to the bottom of the list? If so, scroll down to reveal new message.
         if (isScrolledToBottom) {
             // scroll to the last item
-            binding.rvChat.scrollToPosition(chatMessageAdapter.chatItems.size - 1)
+            binding.rvChat.scrollToPosition(rvChatMessageAdapter.chatItems.size - 1)
         }
     }
 
