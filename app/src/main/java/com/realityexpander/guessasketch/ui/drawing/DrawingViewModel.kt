@@ -31,7 +31,8 @@ class DrawingViewModel @Inject constructor(
     lateinit var playerName: String
 
     //////////////////////////////
-    // UI State Events
+    /// UI State Events        ///
+    //////////////////////////////
 
     // Current selected "pick color" radio button
     private val _selectedColorButtonId =
@@ -48,7 +49,7 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(false)
     val pickWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
 
-    // Chat messages
+    // Chat message List
     private val _chatMessages =
         MutableStateFlow<List<BaseMessageType>>(listOf())
     val chatMessages: StateFlow<List<BaseMessageType>> = _chatMessages
@@ -75,7 +76,7 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(GameState("","",""))
     val gameState: StateFlow<GameState> = _gameState
 
-    // Drawing Path Stack Update
+    // Drawing Path Stack
     private val _pathStackData =
         MutableStateFlow(Stack<DrawingView.PathData>())
     val pathStackData: StateFlow<Stack<DrawingView.PathData>> = _pathStackData
@@ -87,7 +88,8 @@ class DrawingViewModel @Inject constructor(
     val playersList: StateFlow<PlayersList> = _playersList
 
     //////////////////////////////
-    // WebSocket events
+    /// WebSocket events       ///
+    //////////////////////////////
 
     // Can use this to wrap the websocket messagesTypes with more data (if necessary)
     data class MessageEvent<T: BaseMessageType>(val data: T, val type: String, val extra: String) //: SocketMessageEvent()
