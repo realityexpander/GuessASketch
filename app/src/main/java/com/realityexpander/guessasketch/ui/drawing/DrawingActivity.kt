@@ -716,7 +716,7 @@ class DrawingActivity: AppCompatActivity(), LifecycleObserver {
     // The reason we call this instead of onStop is because we are using the voice recording
     //   functionality and that requires the activity to be stopped while the permissions
     //   are being requested. This allows the game to continue while the permissions are
-    //   being requested.
+    //   being requested. This ON_STOP is only called when the activity is completely stopped.
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onAppInBackground() {
         viewModel.sendDisconnectRequest()
