@@ -15,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
@@ -169,6 +170,7 @@ class DrawingViewModel @Inject constructor(
                 // Filter messages:
                 //   1) to be sent to the activity,
                 //   2) or handled here in the viewModel.
+                //   3) A combination of 1 + 2.
                 when(message) {
                     is DrawData,
                     is DrawAction,
@@ -179,11 +181,11 @@ class DrawingViewModel @Inject constructor(
                     }
                     is GameState -> {
                         _gameState.value = message
-                        _socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
+                        //_socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
                     }
                     is PlayersList -> {
                         _playersList.value = message
-                        _socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
+                        //_socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
                     }
                     is WordsToPick -> {
                         _wordsToPick.value = message
@@ -211,7 +213,7 @@ class DrawingViewModel @Inject constructor(
                         }
                     }
                     else -> {
-                        println("DrawingViewModel observeSocketConnectionEvents - Unhandled SocketMessage Event: $message")
+                        Timber.e("DrawingViewModel observeSocketConnectionEvents - Unhandled SocketMessage Event: $message")
 
                         // do nothing since we will get all events (that we didn't handle) from the websocket
                         // including SocketConnectionEvents

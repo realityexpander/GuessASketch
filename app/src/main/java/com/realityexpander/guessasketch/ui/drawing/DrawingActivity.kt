@@ -447,7 +447,7 @@ class DrawingActivity: AppCompatActivity() {
                         addChatItemToChatMessagesAndScroll(message)
                     }
                     else -> {
-                        Timber.DebugTree().e("DrawingActivity - Unexpected BaseMessage type: ${message.type}")
+                        Timber.e("DrawingActivity - socketBaseMessageEvent - Unexpected BaseMessage type: ${message.type}")
                     }
                 }
 
@@ -474,7 +474,7 @@ class DrawingActivity: AppCompatActivity() {
                     event.throwable.printStackTrace()
                 }
                 else -> {
-                    // do nothing
+                    Timber.e("DrawingActivity - socketConnectionEvent - Unexpected event type: ${event.javaClass}")
                 }
             }
         }
