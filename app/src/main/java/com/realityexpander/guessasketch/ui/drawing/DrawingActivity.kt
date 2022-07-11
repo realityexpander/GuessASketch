@@ -22,7 +22,6 @@ import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.C
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_DOWN
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.PlayerData
-import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_DRAW
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_ERASE
@@ -292,13 +291,13 @@ class DrawingActivity: AppCompatActivity() {
                 println("gamePhaseChange = $gamePhaseUpdate")
 
                 when(gamePhaseUpdate.gamePhase) {
-                    Room.GamePhase.INITIAL_STATE -> {
+                    GamePhaseUpdate.GamePhase.INITIAL_STATE -> {
                         // do nothing
 
                         setColorButtonGroupIsVisible(false)
                         setChatMessageInputIsVisible(false)
                     }
-                    Room.GamePhase.WAITING_FOR_PLAYERS -> {
+                    GamePhaseUpdate.GamePhase.WAITING_FOR_PLAYERS -> {
                         binding.apply {
                             roundTimerProgressBar.isIndeterminate = true
                             tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_players)
@@ -307,7 +306,7 @@ class DrawingActivity: AppCompatActivity() {
                         viewModel.setConnectionProgressBarVisible(false)
                         setChatMessageInputIsVisible(true)
                     }
-                    Room.GamePhase.WAITING_FOR_START -> {
+                    GamePhaseUpdate.GamePhase.WAITING_FOR_START -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt()
                             roundTimerProgressBar.progress = roundTimerProgressBar.max
@@ -316,7 +315,7 @@ class DrawingActivity: AppCompatActivity() {
                             setChatMessageInputIsVisible(true)
                         }
                     }
-                    Room.GamePhase.NEW_ROUND -> {
+                    GamePhaseUpdate.GamePhase.NEW_ROUND -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             gamePhaseUpdate.drawingPlayerName?.let { drawingPlayerName ->
@@ -338,7 +337,7 @@ class DrawingActivity: AppCompatActivity() {
                             setChatMessageInputIsVisible(true)
                         }
                     }
-                    Room.GamePhase.ROUND_IN_PROGRESS -> {
+                    GamePhaseUpdate.GamePhase.ROUND_IN_PROGRESS -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             viewModel.setPickWordOverlayVisible(false) // no one can pick the word anymore
@@ -350,7 +349,7 @@ class DrawingActivity: AppCompatActivity() {
                             }
                         }
                     }
-                    Room.GamePhase.ROUND_ENDED -> {
+                    GamePhaseUpdate.GamePhase.ROUND_ENDED -> {
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             drawingView.isEnabled = false // no one can draw while the word is being shown

@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.realityexpander.guessasketch.R
-import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.DrawingApi
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
 import com.realityexpander.guessasketch.ui.views.DrawingView
@@ -61,7 +60,7 @@ class DrawingViewModel @Inject constructor(
 
     // Game Phase Change
     private val _gamePhaseChange =
-        MutableStateFlow(GamePhaseUpdate(Room.GamePhase.INITIAL_STATE))
+        MutableStateFlow(GamePhaseUpdate(GamePhaseUpdate.GamePhase.INITIAL_STATE))
     val gamePhaseChange: StateFlow<GamePhaseUpdate> = _gamePhaseChange
 
     // Game Phase Countdown Timer
@@ -204,7 +203,7 @@ class DrawingViewModel @Inject constructor(
                         _gamePhaseTime.value = message.countdownTimerMillis
 
                         // If *NOT* WAITING_FOR_PLAYERS phase, set/sync timer to the GamePhaseUpdate
-                        if (message.gamePhase != Room.GamePhase.WAITING_FOR_PLAYERS) {
+                        if (message.gamePhase != GamePhaseUpdate.GamePhase.WAITING_FOR_PLAYERS) {
                             // sync local time to server timer
                             setGamePhaseCountdownTimer(message.countdownTimerMillis)
                         }
