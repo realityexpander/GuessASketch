@@ -397,12 +397,14 @@ class DrawingActivity: AppCompatActivity() {
 
     private fun listenToSocketBaseMessageEvents() {
         lifecycleScope.launchWhenStarted {
-            viewModel.socketBaseMessageEvent.collect { message ->
+            viewModel.socketBaseMessageEventChannel.collect { message ->
 
                 when(message) {
                     is DrawData -> {
                         // only draw server data if this user is NOT the drawing player
-                        if(binding.drawingView.isEnabled) return@collect
+                        // todo needed? currently server only sends the drawData to the non-drawing players
+                        //    unless its updating the drawing player when rejoining the room.
+                        //if(binding.drawingView.isEnabled) return@collect
 
                         when (message.motionEvent) {
                             DRAW_DATA_MOTION_EVENT_ACTION_DOWN,
@@ -420,7 +422,9 @@ class DrawingActivity: AppCompatActivity() {
                         }
                     }
                     is DrawAction -> {
-                        if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player
+                        // todo needed? currently server only sends the drawData to the non-drawing players
+                        //    unless its updating the drawing player when rejoining the room.
+                        //if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player // todo needed?
 
                         when(message.action) {
                             DRAW_ACTION_UNDO -> { binding.drawingView.undo() }
@@ -456,7 +460,7 @@ class DrawingActivity: AppCompatActivity() {
     }
 
     private fun listenToSocketConnectionEvents() = lifecycleScope.launchWhenStarted {
-        viewModel.socketConnectionEvent.collect  { event ->
+        viewModel.socketConnectionEventChannel.collect  { event ->
             when(event) {
                 is WebSocket.Event.OnConnectionOpened<*> -> {
                     viewModel.sendBaseMessageType(

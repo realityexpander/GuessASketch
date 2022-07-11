@@ -3,9 +3,11 @@ package com.realityexpander.guessasketch.ui.drawing
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.data.remote.ws.DrawingApi
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessageType.messageTypeMap
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.CoroutineCountdownTimer
 import com.realityexpander.guessasketch.util.DispatcherProvider
@@ -98,12 +100,12 @@ class DrawingViewModel @Inject constructor(
     // Socket connection events
     private val _socketConnectionEventChannel =
         Channel<WebSocket.Event>()
-    val socketConnectionEvent = _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
+    val socketConnectionEventChannel = _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     // Socket BaseMessage events
     private val _socketBaseMessageEventChannel =
         Channel<BaseMessageType>()
-    val socketBaseMessageEvent = _socketBaseMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
+    val socketBaseMessageEventChannel = _socketBaseMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     //////////////////////////////
 
@@ -212,6 +214,22 @@ class DrawingViewModel @Inject constructor(
                             setGamePhaseCountdownTimer(message.countdownTimerMillis)
                         }
                     }
+                    is CurRoundDrawData -> {
+                        // We get a message with a list of json strings that represent that draw data for the current round
+                        // We need to convert this to a list of DrawData and DrawAction objects
+                        message.data.forEach { json ->
+                            // Convert json string to a jsonObject for easier parsing
+                            val jsonObject = JsonParser.parseString(json).asJsonObject
+                            val type = jsonObject.get("type").asString
+                            type ?: throw IllegalStateException("CurRoundDrawData message type not found, type=$type")
+
+                            // Convert the json string to a DrawData or DrawAction object
+                            val drawMessage = gson.fromJson(json, messageTypeMap[type])
+                            drawMessage ?: throw IllegalStateException("CurRoundDrawData drawMessage not found, type=$type")
+
+                            _socketBaseMessageEventChannel.send(drawMessage)
+                        }
+                    }
                     else -> {
                         Timber.e("DrawingViewModel observeSocketConnectionEvents - Unhandled SocketMessage Event: $message")
 
@@ -248,5 +266,9 @@ class DrawingViewModel @Inject constructor(
             // println("Sending message: $message")
             drawingApi.sendBaseMessage(message)
         }
+    }
+
+    fun sendDisconnectRequest() {
+        sendBaseMessageType(DisconnectRequest())
     }
 }
