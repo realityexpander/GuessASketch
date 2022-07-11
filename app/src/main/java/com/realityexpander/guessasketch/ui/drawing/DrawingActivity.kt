@@ -606,7 +606,7 @@ class DrawingActivity: AppCompatActivity() {
         )
     }
 
-    //  Map of Colors to radio button IDs
+    //  Map of Colors (ColorInt) to color radio button Id (ResId)
     private fun getColorToButtonIdMap(): Map<ColorInt, ResId> { // <@ColorInt, @IdRes>
         return mapOf(
               Color.RED     to R.id.rbRed,
