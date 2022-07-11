@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.realityexpander.guessasketch.data.remote.common.PlayerData
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.PlayerData
 import com.realityexpander.guessasketch.databinding.ItemPlayerBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

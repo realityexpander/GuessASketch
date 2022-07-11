@@ -21,7 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_UNDO
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_DOWN
 import com.realityexpander.guessasketch.R
-import com.realityexpander.guessasketch.data.remote.common.PlayerData
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.PlayerData
 import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_DRAW
