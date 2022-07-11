@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import androidx.navigation.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -49,7 +49,7 @@ typealias ResId = Int // like @ResId
 const val CAN_SCROLL_DOWN = 1 // List scroll position is NOT at the bottom, ie: Can scroll down if needed
 
 @AndroidEntryPoint
-class DrawingActivity: AppCompatActivity() {
+class DrawingActivity: AppCompatActivity(), LifecycleObserver {
 
     private lateinit var binding: ActivityDrawingBinding
 
@@ -80,6 +80,9 @@ class DrawingActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDrawingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Setup the LifeCycleObserver
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         viewModel.playerName = args.playerName
 
@@ -707,6 +710,16 @@ class DrawingActivity: AppCompatActivity() {
         val setWordToGuess = SetWordToGuess(word, roomName)
 
         viewModel.sendBaseMessageType(setWordToGuess)
+    }
+
+    // Lifecycle Observer
+    // The reason we call this instead of onStop is because we are using the voice recording
+    //   functionality and that requires the activity to be stopped while the permissions
+    //   are being requested. This allows the game to continue while the permissions are
+    //   being requested.
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private fun onAppInBackground() {
+        viewModel.sendDisconnectRequest()
     }
 }
 
