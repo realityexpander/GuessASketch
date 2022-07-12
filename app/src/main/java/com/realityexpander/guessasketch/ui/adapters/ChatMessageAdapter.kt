@@ -170,7 +170,7 @@ class ChatMessageAdapter constructor(
                     }
                 }
             }
-            else -> throw IllegalArgumentException("Unknown view type")
+            else -> throw IllegalArgumentException("Unknown ChatMessage view type")
         }
 
     }

@@ -151,7 +151,7 @@ class DrawingViewModel @Inject constructor(
                         _socketConnectionEventChannel.send(event)
                     }
                     else -> {
-                        // do nothing since we will get all events (that we didnt handle) from the websocket
+                        // do nothing since we will get all events (that we didn't handle) from the websocket
                         // including SocketBaseMessages
 
                         // println("SocketConnection unhandled Event: $event")
