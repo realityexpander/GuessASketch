@@ -308,6 +308,9 @@ class DrawingActivity: AppCompatActivity(), LifecycleObserver {
                         viewModel.cancelGamePhaseCountdownTimer()
                         viewModel.setConnectionProgressBarVisible(false)
                         setChatMessageInputIsVisible(true)
+
+                        // hide the pick word overlay in case players have left and we are back in the waiting phase
+                        viewModel.setPickWordOverlayVisible(false)
                     }
                     GamePhaseUpdate.GamePhase.WAITING_FOR_START -> {
                         binding.apply {
