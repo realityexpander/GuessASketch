@@ -10,10 +10,12 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.*
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,9 +33,11 @@ import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
 import com.realityexpander.guessasketch.di.CLIENT_ID
 import com.realityexpander.guessasketch.ui.adapters.ChatMessageAdapter
 import com.realityexpander.guessasketch.ui.adapters.PlayerAdapter
+import com.realityexpander.guessasketch.ui.dialogs.LeaveDialog
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.hideKeyboard
+import com.realityexpander.guessasketch.util.navigateSafely
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -724,6 +728,18 @@ class DrawingActivity: AppCompatActivity(), LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onAppInBackground() {
         viewModel.sendDisconnectRequest()
+    }
+
+    override fun onBackPressed() {
+        // super.onBackPressed()  // calling this would cause the activity to exit
+
+        LeaveDialog().apply {
+            setPositiveClickListener {
+                viewModel.sendDisconnectRequest()
+                super.onBackPressed() // call the super method to exit the activity
+                // finish() // or should we call finish()?
+            }
+        }.show(supportFragmentManager, "LeaveDialog")
     }
 }
 

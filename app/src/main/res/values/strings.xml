@@ -34,8 +34,10 @@
     <string name="error_internet_turned_off">This app requires an active internet connection to be used.</string>
     <string name="close">Close</string>
     <string name="open">Open</string>
-    <string name="dialog_leave_title">Do you really want to close the app?</string>
-    <string name="dialog_leave_message">This will disconnect you from the game.</string>
+    <string name="dialog_leave_app">Do you really want to leave the App?</string>
+    <string name="dialog_leave_app_message">This will quit the app.</string>
+    <string name="dialog_leave_room_title">Do you really want to leave the room?</string>
+    <string name="dialog_leave_room_message">This will disconnect you from the game.</string>
     <string name="dialog_yes">yes</string>
     <string name="dialog_leave_no">no</string>
     <string name="room_size">Room Size</string>
