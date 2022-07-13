@@ -326,7 +326,7 @@ class DrawingActivity:
             }
         }
 
-        // Game Phase Update - update the round timer & Progress bar
+        // Game Phase Time Update - update the round timer & Progress bar
         lifecycleScope.launchWhenStarted {
             viewModel.gamePhaseTime.collect { time ->
                 binding.roundTimerProgressBar.progress = time.toInt()  // uses `.max` value as maximum
@@ -339,6 +339,10 @@ class DrawingActivity:
         lifecycleScope.launchWhenStarted {
             viewModel.gameState.collect { gameState ->
                 binding.apply {
+
+                    // Initial state?
+                    if(gameState.drawingPlayerName == "") return@collect  // if so, ignore it // todo make these null?
+
                     // Gives the "word to guess" actual word to the drawing player.
                     // Server will send the "underscored" word to non-drawing players.
                     tvWordToGuessOrStatusMessage.text = gameState.wordToGuess
@@ -348,7 +352,8 @@ class DrawingActivity:
                     setColorButtonGroupIsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
                     drawingView.isEnabled = isDrawingPlayer
 
-                    ibMic.isVisible = !isDrawingPlayer // only the guessing players can use the mic
+                    // only the guessing players can use the mic
+                    ibMic.isVisible = !isDrawingPlayer
 
                     // NOTE: drawing player can still use the chat Messages
                     // todo should this be turned off for drawing player?
@@ -357,7 +362,7 @@ class DrawingActivity:
             }
         }
 
-        // Game Phase Change (Updates are handled in gamePhaseTime)
+        // Game Phase Change (Time only updates are handled in gamePhaseTime)
         lifecycleScope.launchWhenStarted {
             viewModel.gamePhaseChange.collect { gamePhaseUpdate ->
 
@@ -534,7 +539,6 @@ class DrawingActivity:
                         }
                     }
                     is Announcement -> {
-                        //showSnackbar("${message.message} - ${message.announcementType}")
                         addChatItemToChatMessagesAndScroll(message)
                     }
                     is ChatMessage -> {
@@ -583,18 +587,18 @@ class DrawingActivity:
     //   functionality and that requires the activity to be stopped while the permissions
     //   are being requested. This allows the game to continue while the permissions are
     //   being requested. This ON_STOP is only called when the activity is completely stopped.
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)  // fired when app is been minimized
     private fun onAppInBackground() {
         viewModel.sendDisconnectRequest()
     }
 
     override fun onBackPressed() {
-        // super.onBackPressed()  // calling this would cause the activity to exit
-
         LeaveDialog().apply {
             setPositiveClickListener {
-                viewModel.sendDisconnectRequest()
-                super.onBackPressed() // call the super method to exit the activity
+                viewModel.sendDisconnectRequest {
+                    super.onBackPressed() // call the super method to exit the activity
+                }
+
                 // finish() // don't call finish(), because this will close the app.
             }
         }.show(supportFragmentManager, "LeaveDialog")
@@ -908,7 +912,7 @@ class DrawingActivity:
        }
     }
 
-    /// speech recognizer receivers ///
+    /// Speech Recognizer receivers ///
 
     override fun onReadyForSpeech(params: Bundle?) {
         // binding.etMessage.text?.clear() // todo if the user is writing a message, should we keep it?

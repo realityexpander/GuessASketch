@@ -213,9 +213,9 @@ class DrawingViewModel @Inject constructor(
                         // Get the current countdown timer of the gamePhase (from the server every second)
                         _gamePhaseTime.value = message.countdownTimerMillis
 
-                        // If *NOT* WAITING_FOR_PLAYERS phase, set/sync timer to the GamePhaseUpdate
+                        // If *NOT* WAITING_FOR_PLAYERS phase, set/sync timer to the GamePhaseUpdate timer
                         if (message.gamePhase != GamePhaseUpdate.GamePhase.WAITING_FOR_PLAYERS) {
-                            // sync local time to server timer
+                            // sync local timer to server timer
                             setGamePhaseCountdownTimer(message.countdownTimerMillis)
                         }
                     }
@@ -256,10 +256,13 @@ class DrawingViewModel @Inject constructor(
     }
 
     // Send messages to the socket for the server to handle
-    fun sendBaseMessageType(data: BaseMessageType) {
+    fun <T:BaseMessageType> sendBaseMessageType(data: T, callWhenDone: (() -> Unit)? = null) {
         viewModelScope.launch(dispatcher.io) {
-            println("Sending message: $data")
+            println("Sending message: ${data.javaClass.simpleName} --> $data")
             drawingApi.sendBaseMessage(data)
+
+            // Call the callback when the message is sent
+            callWhenDone?.invoke()
         }
     }
 
@@ -273,8 +276,8 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
-    fun sendDisconnectRequest() {
-        sendBaseMessageType(DisconnectRequest())
+    fun sendDisconnectRequest(callWhenDone: (() -> Unit)? = null) {
+        sendBaseMessageType(DisconnectRequest(), callWhenDone)
     }
 
     ////////////////////////////////
