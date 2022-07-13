@@ -1,11 +1,13 @@
 package com.realityexpander.guessasketch.ui.drawing
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -43,6 +45,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import pub.devrel.easypermissions.AppSettingsDialog
+import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
@@ -51,9 +55,15 @@ typealias ColorInt = Int // like @ColorInt
 typealias ResId = Int // like @ResId
 
 const val CAN_SCROLL_DOWN = 1 // List scroll position is NOT at the bottom, ie: Can scroll down if needed
+const val REQUEST_CODE_RECORD_AUDIO = 10001  // Request code for record audio permission
+
 
 @AndroidEntryPoint
-class DrawingActivity: AppCompatActivity(), LifecycleObserver {
+class DrawingActivity:
+    AppCompatActivity(),
+    LifecycleObserver,
+    EasyPermissions.PermissionCallbacks
+{
 
     private lateinit var binding: ActivityDrawingBinding
 
@@ -740,6 +750,59 @@ class DrawingActivity: AppCompatActivity(), LifecycleObserver {
                 // finish() // dont call finish(), because this will close the app.
             }
         }.show(supportFragmentManager, "LeaveDialog")
+    }
+
+
+    ///////////////////////////////////////////////
+    // Permissions Handling for recording audio
+    ///////////////////////////////////////////////
+
+    private fun isRecordAudioPermissionInManifest() = EasyPermissions.hasPermissions(
+        this,
+        Manifest.permission.RECORD_AUDIO
+    )
+
+    private fun requestRecordAudioPermission() {
+        EasyPermissions.requestPermissions(
+            this,
+            getString(R.string.rationale_record_audio),  // shown when permission is denied the first time
+            REQUEST_CODE_RECORD_AUDIO,
+            Manifest.permission.RECORD_AUDIO
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
+
+    /// receivers ///
+
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
+        if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
+            showToast("Audio record permission granted")
+        }
+    }
+
+    // For Recording audio
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
+            if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+                // User has permanently denied the permission for audio recording.
+                // show the user the AppSettingsDialog to go to settings and enable the permissions.
+                AppSettingsDialog.Builder(this).build().show()
+            } else {
+                showToast("Audio record permission denied")
+            }
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
 
