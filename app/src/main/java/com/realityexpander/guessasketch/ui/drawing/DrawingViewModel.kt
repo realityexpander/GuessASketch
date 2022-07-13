@@ -43,14 +43,14 @@ class DrawingViewModel @Inject constructor(
     val selectedColorButtonId: StateFlow<Int> = _selectedColorButtonId
 
     // Connection Progress bar visibility
-    private val _connectionProgressBarVisible =
+    private val _isConnectionProgressBarVisible =
         MutableStateFlow(true)
-    val connectionProgressBarVisible: StateFlow<Boolean> = _connectionProgressBarVisible
+    val isConnectionProgressBarVisible: StateFlow<Boolean> = _isConnectionProgressBarVisible
 
     // Choose Word Overlay visibility
-    private val _chooseWordOverlayVisible =
+    private val _isPickWordOverlayVisible =
         MutableStateFlow(false)
-    val pickWordOverlayVisible: StateFlow<Boolean> = _chooseWordOverlayVisible
+    val isPickWordOverlayVisible: StateFlow<Boolean> = _isPickWordOverlayVisible
 
     // Chat message List
     private val _chatMessages =
@@ -90,6 +90,11 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(PlayersList(listOf()))
     val playersList: StateFlow<PlayersList> = _playersList
 
+    // Speech Recognition
+    private val _isSpeechRecognizerListening =
+        MutableStateFlow(false)
+    val isSpeechRecognizerListening: StateFlow<Boolean> = _isSpeechRecognizerListening
+
     //////////////////////////////
     /// WebSocket events       ///
     //////////////////////////////
@@ -126,11 +131,11 @@ class DrawingViewModel @Inject constructor(
     }
 
     fun setPickWordOverlayVisible(visible: Boolean) {
-        _chooseWordOverlayVisible.value = visible
+        _isPickWordOverlayVisible.value = visible
     }
 
     fun setConnectionProgressBarVisible(visible: Boolean) {
-        _connectionProgressBarVisible.value = visible
+        _isConnectionProgressBarVisible.value = visible
     }
 
     fun selectColorRadioButton(id: Int) {
@@ -270,5 +275,17 @@ class DrawingViewModel @Inject constructor(
 
     fun sendDisconnectRequest() {
         sendBaseMessageType(DisconnectRequest())
+    }
+
+    ////////////////////////////////
+    // Speech Recognizer
+    ////////////////////////////////
+
+    fun startSpeechRecognizerListening() {
+        _isSpeechRecognizerListening.value = true
+    }
+
+    fun stopSpeechRecognizerListening() {
+        _isSpeechRecognizerListening.value = false
     }
 }

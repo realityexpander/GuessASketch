@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.MenuItem
@@ -15,23 +16,20 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.*
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_UNDO
-import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_DOWN
 import com.realityexpander.guessasketch.R
-import com.realityexpander.guessasketch.data.remote.ws.messageTypes.PlayerData
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.*
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_DRAW
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_ERASE
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawAction.Companion.DRAW_ACTION_UNDO
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_DOWN
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_MOVE
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.DrawData.Companion.DRAW_DATA_MOTION_EVENT_ACTION_UP
 import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
@@ -43,7 +41,6 @@ import com.realityexpander.guessasketch.ui.dialogs.LeaveDialog
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.hideKeyboard
-import com.realityexpander.guessasketch.util.navigateSafely
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -66,9 +63,9 @@ const val REQUEST_CODE_RECORD_AUDIO = 10001  // Request code for record audio
 class DrawingActivity:
     AppCompatActivity(),
     LifecycleObserver,
-    EasyPermissions.PermissionCallbacks
+    EasyPermissions.PermissionCallbacks, // for audio recording permissions for the speech recognizer
+    RecognitionListener // for speech recognizer
 {
-
     private lateinit var binding: ActivityDrawingBinding
 
     private val viewModel: DrawingViewModel by viewModels()
@@ -81,7 +78,7 @@ class DrawingActivity:
     private var isDrawingPlayer = false
 
     // Color radio buttons
-    private lateinit var resourceColorToButtonIdMap: Map<Int, Int>
+    private lateinit var resourceColorToColorButtonIdMap: Map<Int, Int>
     private var curDrawingColor: Int = Color.BLACK
 
     // Chat message list
@@ -95,7 +92,7 @@ class DrawingActivity:
 
     // Speech recognition
     private lateinit var speechRecognizer: SpeechRecognizer
-    private lateinit var speechIntent: Intent
+    private lateinit var speechRecognizerIntent: Intent
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,18 +100,19 @@ class DrawingActivity:
         binding = ActivityDrawingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel.playerName = args.playerName
+
         // Setup the LifeCycleObserver
+        // (for when activity finally completely stops, not just paused for permissions
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
-        viewModel.playerName = args.playerName
+        // Setup the map of resource colors to radio button ids
+        resourceColorToColorButtonIdMap = getColorToColorButtonIdMap()
 
         // Select the color of the drawing player's pen
         binding.colorGroup.setOnCheckedChangeListener { _, checkedId ->
             viewModel.selectColorRadioButton(checkedId)
         }
-
-        // Setup the map of resource colors to radio button ids
-        resourceColorToButtonIdMap = getColorToButtonIdMap()
 
         // Undo (only available to drawing player)
         binding.ibUndo.setOnClickListener {
@@ -150,19 +148,51 @@ class DrawingActivity:
             viewModel.setPathStackData(pathStack)
         }
 
-        // Speech recognition
+        // Setup Speech recognition
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
-        speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            //putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US)
             putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, SPEECH_RECOGNIZER_MAX_NUM_WORDS_MAX_RESULTS)
         }
+        if(SpeechRecognizer.isRecognitionAvailable(this)) {
+            speechRecognizer.setRecognitionListener(this)
+        } else {
+            Timber.w("Speech recognition is not available")
+        }
+
+        // Setup speech recognition button
+        binding.ibMic.setOnClickListener {
+
+            // if was NOT listening and we have permission to record audio, start listening
+            if(!viewModel.isSpeechRecognizerListening.value && isRecordAudioPermissionInManifest()) {
+                viewModel.startSpeechRecognizerListening()
+                return@setOnClickListener
+            }
+
+            // if want to start listening, but we don't have permission to record audio, ask for permission
+            if (!viewModel.isSpeechRecognizerListening.value) {
+                requestRecordAudioPermission()
+                return@setOnClickListener
+            }
+
+            // if was listening, switch it off now.
+            viewModel.stopSpeechRecognizerListening()
+        }
+
+
+        /////////////////////////
+        // setup UI components
 
         setupNavDrawer()
         setupChatMessageRecyclerView()
 
-        subscribeToUiStateEvents()
+        /////////////////////////
+        // Setup event listeners
+
+        listenToUiStateEvents()
 
         listenToSocketConnectionEvents()
         listenToSocketBaseMessageEvents()
@@ -170,12 +200,9 @@ class DrawingActivity:
         setupDrawingViewTouchListenerToSendDrawDataToServer(binding.drawingView)
     }
 
-    override fun onPause() {
-        super.onPause()
-
-        // Save the state of the chat message recycler view
-        binding.rvChat.layoutManager?.onSaveInstanceState()
-    }
+    ///////////////////////////////////
+    // Setup UI                      //
+    ///////////////////////////////////
 
     // Setup the drawer for the recyclerview list of players
     private fun setupNavDrawer() {
@@ -210,8 +237,21 @@ class DrawingActivity:
 
     }
 
-    // subscribe to UI state updates from the view model
-    private fun subscribeToUiStateEvents() {
+    // For ActionBarDrawer  // todo is this used? remove?
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(toggleDrawer.onOptionsItemSelected(item)) {
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+
+    ///////////////////////////////////
+    // Listen to ViewModel events    //
+    ///////////////////////////////////
+
+    // Listen to UI state updates from the view model
+    private fun listenToUiStateEvents() {
         // We have separate lifecycle scope for each UI State event, because when
         // the coroutine is suspended, it wouldn't process events for any UI items below it.
         // ie: If we put all UI State Events in the selectedColorButtonId scope, only when the user
@@ -224,9 +264,9 @@ class DrawingActivity:
 
                 // Set the paint color of the drawing view
                 //   ** this is a reverse search for color (key) by searching for the button id (value)
-                curDrawingColor = resourceColorToButtonIdMap.entries.firstOrNull { colorToButtonId ->
-                        colorToButtonId.value == buttonId
-                    }?.key ?: Color.BLACK
+                curDrawingColor = resourceColorToColorButtonIdMap.entries.firstOrNull { colorToButtonId ->
+                    colorToButtonId.value == buttonId
+                }?.key ?: Color.BLACK
                 selectColor(curDrawingColor)
 
             }
@@ -234,14 +274,14 @@ class DrawingActivity:
 
         // Connection Progress Bar
         lifecycleScope.launchWhenStarted {
-            viewModel.connectionProgressBarVisible.collect { isVisible ->
+            viewModel.isConnectionProgressBarVisible.collect { isVisible ->
                 binding.connectionProgressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
         }
 
         // Pick Word Overlay visibility
         lifecycleScope.launchWhenStarted {
-            viewModel.pickWordOverlayVisible.collect { isVisible ->
+            viewModel.isPickWordOverlayVisible.collect { isVisible ->
                 binding.pickWordOverlay.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
         }
@@ -430,6 +470,19 @@ class DrawingActivity:
                 }
             }
         }
+
+        // Speech Recognition listening state update
+        lifecycleScope.launchWhenStarted {
+            viewModel.isSpeechRecognizerListening.collect { isListening ->
+                if(isListening && !SpeechRecognizer.isRecognitionAvailable(this@DrawingActivity)) {
+                    showToast(getString(R.string.speech_recognizer_not_available))
+                    binding.ibMic.isEnabled = false
+                } else {
+                    binding.ibMic.isEnabled = true
+                    setSpeechRecognizerIsListening(isListening)
+                }
+            }
+        }
     }
 
     private fun listenToSocketBaseMessageEvents() {
@@ -521,6 +574,48 @@ class DrawingActivity:
         }
     }
 
+    /////////////////////////////////////
+    // Lifecycle Handling              //
+    /////////////////////////////////////
+
+    // Lifecycle Observer
+    // The reason we call this instead of onStop is because we are using the voice recording
+    //   functionality and that requires the activity to be stopped while the permissions
+    //   are being requested. This allows the game to continue while the permissions are
+    //   being requested. This ON_STOP is only called when the activity is completely stopped.
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private fun onAppInBackground() {
+        viewModel.sendDisconnectRequest()
+    }
+
+    override fun onBackPressed() {
+        // super.onBackPressed()  // calling this would cause the activity to exit
+
+        LeaveDialog().apply {
+            setPositiveClickListener {
+                viewModel.sendDisconnectRequest()
+                super.onBackPressed() // call the super method to exit the activity
+                // finish() // don't call finish(), because this will close the app.
+            }
+        }.show(supportFragmentManager, "LeaveDialog")
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Save the state of the chat message recycler view
+        binding.rvChat.layoutManager?.onSaveInstanceState()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        speechRecognizer.destroy()
+    }
+
+    ////////////////////////////////////
+    // Drawing View handling          //
+    ////////////////////////////////////
+
     @SuppressLint("ClickableViewAccessibility")  // for onTouchListener not implementing performClick()
     private fun setupDrawingViewTouchListenerToSendDrawDataToServer(drawView: DrawingView) {
 
@@ -569,7 +664,7 @@ class DrawingActivity:
         motionEvent: String
     ): DrawData {
         return DrawData(
-            roomName = args.roomName ?: throw IllegalStateException("Room name is null"),
+            roomName = args.roomName,
             color = binding.drawingView.getColor(),
             strokeWidth = binding.drawingView.getStrokeWidth(),
             fromX = fromX / binding.drawingView.getViewWidth(),
@@ -643,12 +738,12 @@ class DrawingActivity:
     // Select the radio button for a given color
     private fun selectColorRadioButtonForColor(color: ColorInt) {
         binding.colorGroup.check(
-            resourceColorToButtonIdMap[color] ?: R.id.rbBlack
+            resourceColorToColorButtonIdMap[color] ?: R.id.rbBlack
         )
     }
 
     //  Map of Colors (ColorInt) to color radio button Id (ResId)
-    private fun getColorToButtonIdMap(): Map<ColorInt, ResId> { // <@ColorInt, @IdRes>
+    private fun getColorToColorButtonIdMap(): Map<ColorInt, ResId> { // <@ColorInt, @IdRes>
         return mapOf(
               Color.RED     to R.id.rbRed,
               Color.GREEN   to R.id.rbGreen,
@@ -666,17 +761,10 @@ class DrawingActivity:
         binding.ibUndo.isVisible = isVisible
     }
 
-    private fun showSnackbar(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    }
 
-    // For ActionBarDrawer  // todo is this used? remove?
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(toggleDrawer.onOptionsItemSelected(item)) {
-            return true
-        }
-        return super.onOptionsItemSelected(item)
-    }
+    /////////////////////////////////
+    // Chat Messages               //
+    /////////////////////////////////
 
     private fun setupChatMessageRecyclerView() {
         binding.rvChat.apply {
@@ -697,18 +785,6 @@ class DrawingActivity:
         updateChatMessagesJob?.cancel() // cancel the previous job if it exists
         updateChatMessagesJob = lifecycleScope.launch {
             rvChatMessageAdapter.updateDataset(chatList)
-        }
-
-        // Handle the job & cancellation in the RV (not here in the activity)
-        // chatMessageAdapter.updateChatMessageList(chatList, lifecycleScope) // replace at end todo
-    }
-
-    // todo put this job in the adapter?
-    private var updatePlayersListJob: Job? = null // for cancelling the update job when new messages are received
-    private fun updatePlayersList(players: List<PlayerData>) {
-        updatePlayersListJob?.cancel() // cancel the previous job if it exists
-        updatePlayersListJob = lifecycleScope.launch {
-            rvPlayersAdapter.updateDataset(players)
         }
 
         // Handle the job & cancellation in the RV (not here in the activity)
@@ -746,37 +822,31 @@ class DrawingActivity:
         viewModel.sendBaseMessageType(setWordToGuess)
     }
 
-    // Lifecycle Observer
-    // The reason we call this instead of onStop is because we are using the voice recording
-    //   functionality and that requires the activity to be stopped while the permissions
-    //   are being requested. This allows the game to continue while the permissions are
-    //   being requested. This ON_STOP is only called when the activity is completely stopped.
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    private fun onAppInBackground() {
-        viewModel.sendDisconnectRequest()
+    /////////////////////////////////////////
+    // Players List in the Nav Drawer      //
+    /////////////////////////////////////////
+
+    // todo put this job in the adapter?
+    private var updatePlayersListJob: Job? = null // for cancelling the update job when new messages are received
+    private fun updatePlayersList(players: List<PlayerData>) {
+        updatePlayersListJob?.cancel() // cancel the previous job if it exists
+        updatePlayersListJob = lifecycleScope.launch {
+            rvPlayersAdapter.updateDataset(players)
+        }
+
+        // Handle the job & cancellation in the RV (not here in the activity)
+        // chatMessageAdapter.updateChatMessageList(chatList, lifecycleScope) // replace at end todo
     }
 
-    override fun onBackPressed() {
-        // super.onBackPressed()  // calling this would cause the activity to exit
+    ///////////////////////////////////////////////////////////////////
+    // Permissions Handling for recording audio & speech recognition //
+    ///////////////////////////////////////////////////////////////////
 
-        LeaveDialog().apply {
-            setPositiveClickListener {
-                viewModel.sendDisconnectRequest()
-                super.onBackPressed() // call the super method to exit the activity
-                // finish() // dont call finish(), because this will close the app.
-            }
-        }.show(supportFragmentManager, "LeaveDialog")
-    }
-
-
-    //////////////////////////////////////////////////////////////////
-    // Permissions Handling for recording audio & speech recognition
-    //////////////////////////////////////////////////////////////////
-
-    private fun isRecordAudioPermissionInManifest() = EasyPermissions.hasPermissions(
-        this,
-        Manifest.permission.RECORD_AUDIO
-    )
+    private fun isRecordAudioPermissionInManifest() =
+        EasyPermissions.hasPermissions(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        )
 
     private fun requestRecordAudioPermission() {
         EasyPermissions.requestPermissions(
@@ -787,6 +857,8 @@ class DrawingActivity:
         )
     }
 
+    /// permission receivers ///
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -796,10 +868,9 @@ class DrawingActivity:
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
-    /// receivers ///
-
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
+            binding.ibMic.isEnabled = true
             showToast("Audio record permission granted")
         }
     }
@@ -807,6 +878,8 @@ class DrawingActivity:
     // For Recording audio
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
+            binding.ibMic.isEnabled = false
+
             if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
                 // User has permanently denied the permission for audio recording.
                 // show the user the AppSettingsDialog to go to settings and enable the permissions.
@@ -817,8 +890,82 @@ class DrawingActivity:
         }
     }
 
+    ///////////////////////////////////////////////////////////////////
+    // Speech Recognizer Handling                                    //
+    ///////////////////////////////////////////////////////////////////
+
+    /// UI Handlers ///
+
+    // User clicked the "Start Speech Recognition" button
+    private fun setSpeechRecognizerIsListening(isListening: Boolean) {
+       if(isListening) {
+           binding.ibMic.setImageResource(R.drawable.ic_mic)
+           speechRecognizer.startListening(speechRecognizerIntent)
+       } else {
+           binding.ibMic.setImageResource(R.drawable.ic_mic_off)
+           binding.etMessage.hint = ""
+           speechRecognizer.stopListening()
+       }
+    }
+
+    /// speech recognizer receivers ///
+
+    override fun onReadyForSpeech(params: Bundle?) {
+        // binding.etMessage.text?.clear() // todo if the user is writing a message, should we keep it?
+        binding.etMessage.hint = getString(R.string.speech_recognizer_listening)
+    }
+
+    override fun onBeginningOfSpeech() {
+        binding.etMessage.hint = "Deciphering words..."
+    }
+
+    override fun onRmsChanged(rmsdB: Float) {
+        /* do nothing */
+    }
+
+    override fun onBufferReceived(buffer: ByteArray?) {
+        /* do nothing */
+    }
+
+    override fun onEndOfSpeech() {
+        viewModel.stopSpeechRecognizerListening()
+    }
+
+    override fun onError(error: Int) {
+        /* do nothing */
+    }
+
+    override fun onResults(results: Bundle?) {
+        val strings = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+        val wordsToGuess = strings?.get(0) ?: ""
+
+        if (wordsToGuess == "")
+            binding.etMessage.hint = "Unknown word"
+        else
+            binding.etMessage.setText(wordsToGuess)
+
+        speechRecognizer.stopListening()
+        viewModel.stopSpeechRecognizerListening()
+    }
+
+    override fun onPartialResults(partialResults: Bundle?) {
+        /* do nothing */
+    }
+
+    override fun onEvent(eventType: Int, params: Bundle?) {
+        /* do nothing */
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    // Utils                                                         //
+    ///////////////////////////////////////////////////////////////////
+
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 }
 

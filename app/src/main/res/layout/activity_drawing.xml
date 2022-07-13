@@ -22,12 +22,27 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <ImageButton
+                android:id="@+id/ib_players_drawer_open"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:scaleX="1.8"
+                android:scaleY="2.0"
+                android:layout_marginStart="8dp"
+                app:srcCompat="@drawable/ic_menu"
+                android:tint="@color/black"
+                android:background="@android:color/transparent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:contentDescription="Open/Close drawer" />
+
         <RadioGroup
             android:id="@+id/colorGroup"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"
+            app:layout_constraintStart_toEndOf="@id/ib_players_drawer_open"
             app:layout_constraintTop_toTopOf="@id/drawingView">
 
             <com.realityexpander.guessasketch.ui.views.ColorRadioButton
@@ -97,8 +112,7 @@
                 android:progress="100"
                 app:layout_constraintEnd_toEndOf="@id/tv_word_to_guess_or_status_message"
                 app:layout_constraintStart_toStartOf="@id/tv_word_to_guess_or_status_message"
-                app:layout_constraintTop_toBottomOf="@id/drawingView"
-                tools:visibility="visible" />
+                app:layout_constraintTop_toBottomOf="@id/drawingView" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_word_to_guess_or_status_message"
@@ -135,26 +149,25 @@
 
         <LinearLayout
             android:id="@+id/llActions"
-            android:layout_width="36dp"
+            android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@+id/tilMessage"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_word_to_guess_or_status_message">
 
-            <ImageButton
-                android:id="@+id/ib_players_drawer_open"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_person"
-                android:background="@android:color/transparent"/>
+<!--            app:layout_constraintTop_toBottomOf="@+id/tv_word_to_guess_or_status_message"-->
 
-            <ImageButton
-                android:id="@+id/ibMic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_mic_off"
-                android:background="@android:color/transparent"/>
+<!--            <ImageButton-->
+<!--                android:id="@+id/ib_players_drawer_open"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:scaleX="1.5"-->
+<!--                android:scaleY="1.5"-->
+<!--                android:layout_marginStart="4dp"-->
+<!--                app:srcCompat="@android:drawable/ic_menu"-->
+<!--                android:tint="@color/black"-->
+<!--                android:background="@android:color/transparent" />-->
 
         </LinearLayout>
 
@@ -165,26 +178,41 @@
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/ibClearText"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toEndOf="@id/ibMic">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etMessage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
                 android:maxLength="150" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <ImageButton
+                android:id="@+id/ibMic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:contentDescription="Mic"
+                android:minHeight="48dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/tilMessage"
+                app:srcCompat="@drawable/ic_mic_off" />
+
+        <ImageButton
             android:id="@+id/ibClearText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="12dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_round_clear_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/ibSend"
-            app:layout_constraintTop_toTopOf="@+id/tilMessage" />
+            app:layout_constraintTop_toTopOf="@+id/tilMessage"
+            android:contentDescription="Clear Text" />
 
         <ImageButton
             android:id="@+id/ibSend"
@@ -195,7 +223,8 @@
             android:src="@drawable/ic_baseline_send_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rvChat" />
+            app:layout_constraintTop_toBottomOf="@+id/rvChat"
+            android:contentDescription="Send Message" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/pick_word_overlay"
@@ -208,7 +237,7 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:visibility="visible">
+                tools:visibility="gone">
 
             <ImageView
                     android:id="@+id/ivHappyMonkey"
@@ -219,7 +248,8 @@
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_happy_monkey" />
+                    app:srcCompat="@drawable/ic_happy_monkey"
+                    android:contentDescription="Happy monkey" />
 
             <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvChooseWord"
@@ -238,62 +268,62 @@
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
-                    tools:text="First Word"
                     app:layout_constraintBottom_toTopOf="@+id/btnSecondWord"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_chainStyle="packed" />
+                    app:layout_constraintVertical_chainStyle="packed"
+                    tools:text="First Word" />
 
             <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSecondWord"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
-                    tools:text="Second Word"
                     app:layout_constraintBottom_toTopOf="@+id/btnThirdWord"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/btnFirstWord"
-                    app:layout_constraintVertical_bias="0.3" />
+                    app:layout_constraintVertical_bias="0.3"
+                    tools:text="Second Word" />
 
             <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnThirdWord"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
-                    tools:text="Third Word"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/btnSecondWord"
-                    app:layout_constraintVertical_bias="0.3" />
+                    app:layout_constraintVertical_bias="0.3"
+                    tools:text="Third Word" />
 
             <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tv_pick_word_time_remaining"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="30"
                     android:textSize="50sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/btnThirdWord" />
+                    app:layout_constraintTop_toBottomOf="@+id/btnThirdWord"
+                    tools:text="30" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navView"
-        android:layout_width="300dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:insetForeground="@android:color/transparent"
-        android:fitsSystemWindows="false" />
+            android:id="@+id/navView"
+            android:layout_width="300dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:fitsSystemWindows="false"
+            app:insetForeground="@android:color/transparent" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
