@@ -737,7 +737,7 @@ class DrawingActivity: AppCompatActivity(), LifecycleObserver {
             setPositiveClickListener {
                 viewModel.sendDisconnectRequest()
                 super.onBackPressed() // call the super method to exit the activity
-                // finish() // or should we call finish()?
+                // finish() // dont call finish(), because this will close the app.
             }
         }.show(supportFragmentManager, "LeaveDialog")
     }

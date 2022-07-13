@@ -6,7 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigator
 
-// Prevents a Bug(?) when navigating to the same destination from the same navController
+// Prevents a Bug(!) when navigating to the same destination from the same navController
 fun NavController.navigateSafely(
     @IdRes resId: Int,
     args: Bundle? = null,
