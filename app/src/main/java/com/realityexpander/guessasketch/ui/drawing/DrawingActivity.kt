@@ -2,8 +2,11 @@ package com.realityexpander.guessasketch.ui.drawing
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
@@ -35,6 +38,7 @@ import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
 import com.realityexpander.guessasketch.di.CLIENT_ID
 import com.realityexpander.guessasketch.ui.adapters.ChatMessageAdapter
 import com.realityexpander.guessasketch.ui.adapters.PlayerAdapter
+import com.realityexpander.guessasketch.ui.common.Constants.SPEECH_RECOGNIZER_MAX_NUM_WORDS_MAX_RESULTS
 import com.realityexpander.guessasketch.ui.dialogs.LeaveDialog
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
@@ -48,6 +52,7 @@ import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -55,8 +60,7 @@ typealias ColorInt = Int // like @ColorInt
 typealias ResId = Int // like @ResId
 
 const val CAN_SCROLL_DOWN = 1 // List scroll position is NOT at the bottom, ie: Can scroll down if needed
-const val REQUEST_CODE_RECORD_AUDIO = 10001  // Request code for record audio permission
-
+const val REQUEST_CODE_RECORD_AUDIO = 10001  // Request code for record audio
 
 @AndroidEntryPoint
 class DrawingActivity:
@@ -88,6 +92,10 @@ class DrawingActivity:
     @Inject  // because the PlayerAdapter constructor as no args, we have injected it
     lateinit var rvPlayersAdapter: PlayerAdapter
     // private lateinit var rvPlayers: RecyclerView  // not needed?
+
+    // Speech recognition
+    private lateinit var speechRecognizer: SpeechRecognizer
+    private lateinit var speechIntent: Intent
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,6 +150,14 @@ class DrawingActivity:
             viewModel.setPathStackData(pathStack)
         }
 
+        // Speech recognition
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US)
+            putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, packageName)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, SPEECH_RECOGNIZER_MAX_NUM_WORDS_MAX_RESULTS)
+        }
 
         setupNavDrawer()
         setupChatMessageRecyclerView()
@@ -753,9 +769,9 @@ class DrawingActivity:
     }
 
 
-    ///////////////////////////////////////////////
-    // Permissions Handling for recording audio
-    ///////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////
+    // Permissions Handling for recording audio & speech recognition
+    //////////////////////////////////////////////////////////////////
 
     private fun isRecordAudioPermissionInManifest() = EasyPermissions.hasPermissions(
         this,

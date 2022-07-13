@@ -21,7 +21,7 @@ import com.realityexpander.guessasketch.util.snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
-@AndroidEntryPoint
+@AndroidEntryPoint  // is this needed since nothing is injected?
 class CreateRoomFragment: Fragment(R.layout.fragment_create_room) {
 
     private var _binding: FragmentCreateRoomBinding? = null

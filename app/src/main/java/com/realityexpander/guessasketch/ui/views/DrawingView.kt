@@ -10,6 +10,7 @@ import com.realityexpander.guessasketch.util.Constants
 import java.util.*
 import kotlin.math.abs
 
+// @JvmOverloads creates the multiple various "overloaded" constructors for the class (for java interoperability)
 class DrawingView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,

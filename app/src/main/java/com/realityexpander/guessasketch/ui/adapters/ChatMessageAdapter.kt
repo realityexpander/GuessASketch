@@ -24,6 +24,7 @@ private const val VIEW_TYPE_INCOMING_MESSAGE = 0
 private const val VIEW_TYPE_OUTGOING_MESSAGE = 1
 private const val VIEW_TYPE_ANNOUNCEMENT = 2
 
+// Cannot use @Inject here because it has constructor parameters
 class ChatMessageAdapter constructor(
     private val playerName: String,
     private val clientId: ClientId,

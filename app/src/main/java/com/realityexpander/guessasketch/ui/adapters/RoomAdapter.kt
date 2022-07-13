@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+// @AndroidEntryPoint is not needed here... interesting! Just the @Inject annotation is needed to use this as a provier
 class RoomAdapter @Inject constructor():
     RecyclerView.Adapter<RoomAdapter.RoomViewHolder>() {
 

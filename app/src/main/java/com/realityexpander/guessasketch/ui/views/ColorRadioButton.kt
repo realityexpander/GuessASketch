@@ -10,7 +10,7 @@ import com.realityexpander.guessasketch.R
 import kotlin.math.min
 import kotlin.properties.Delegates
 
-// @JvmOverloads creates multiple constructors for the class (for java compatibility)
+// @JvmOverloads creates the multiple various "overloaded" constructors for the class (for java interoperability)
 class ColorRadioButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,  // AttributeSet is a class that contains the attributes of the XML file
