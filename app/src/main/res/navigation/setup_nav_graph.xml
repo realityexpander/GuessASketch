@@ -22,7 +22,8 @@
                 app:popUpTo="@id/selectRoomFragment" />
         <action
                 android:id="@+id/action_selectRoomFragment_to_drawingActivity"
-                app:destination="@id/drawingActivity" />
+                app:destination="@id/drawingActivity"
+                app:launchSingleTop="true" />
         <argument
                 android:name="playerName"
                 app:argType="string" />
@@ -34,6 +35,7 @@
         <action
                 android:id="@+id/action_createRoomFragment_to_drawingActivity"
                 app:destination="@id/drawingActivity"
+                app:launchSingleTop="true"
                 app:popUpTo="@id/createRoomFragment" />
         <argument
                 android:name="playerName"
