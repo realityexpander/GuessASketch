@@ -28,7 +28,6 @@ class ChatMessageAdapter constructor(
 ):
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-
     ////////////////////////////////////////////////////////
     /// PUBLIC METHODS & VARS TO BE USED BY THE ACTIVITY ///
 

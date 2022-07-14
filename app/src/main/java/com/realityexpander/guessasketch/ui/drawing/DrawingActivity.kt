@@ -88,7 +88,6 @@ class DrawingActivity:
     private lateinit var toggleDrawer: ActionBarDrawerToggle
     @Inject  // because the PlayerAdapter constructor as no args, we have injected it
     lateinit var rvPlayersAdapter: PlayerAdapter
-    // private lateinit var rvPlayers: RecyclerView  // not needed?
 
     // Speech recognition
     private lateinit var speechRecognizer: SpeechRecognizer
@@ -143,7 +142,7 @@ class DrawingActivity:
             hideKeyboard(binding.root)
         }
 
-        // Drawing Path listener
+        // Drawing Path Data Stack listener
         binding.drawingView.setPathDataStackChangedListener { pathStack ->
             viewModel.setPathStackData(pathStack)
         }
@@ -227,14 +226,7 @@ class DrawingActivity:
 
         })
 
-        // Setup the recycler view for the list of players
-        //   note: because the PlayerAdapter constructor as no args, we have injected it (see @Inject)
-        val rvPlayers = navHeader.findViewById<RecyclerView>(R.id.rvPlayers)
-        rvPlayers.apply {
-            layoutManager = LinearLayoutManager(this@DrawingActivity)
-            adapter = rvPlayersAdapter
-        }
-
+        setupPlayerListInNavDrawer(navHeader)
     }
 
     // For ActionBarDrawer
@@ -790,15 +782,7 @@ class DrawingActivity:
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
     }
 
-    // todo put this job in the adapter?
-//    private var updateChatMessagesJob: Job? = null // for cancelling the update job when new messages are received
     private fun updateChatMessages(chatList: List<BaseMessageType>) {
-//        updateChatMessagesJob?.cancel() // cancel the previous job if it exists
-//        updateChatMessagesJob = lifecycleScope.launch {
-//            rvChatMessageAdapter.updateDataset(chatList)
-//        }
-
-        // Handle the job & cancellation in the RV (not here in the activity)
         rvChatMessageAdapter.updateChatMessages(chatList, lifecycleScope) // replace at end todo
     }
 
@@ -812,7 +796,6 @@ class DrawingActivity:
         updateChatMessages(rvChatMessageAdapter.chatItems + chatItem)
 
         // wait for the update job to finish before (possibly) scrolling down to see the new message.
-//        updateChatMessagesJob?.join() // todo remove
         rvChatMessageAdapter.waitForChatMessagesToUpdate()
 
         // Is the user scrolled to the bottom of the list? If so, scroll down to reveal new message.
@@ -839,16 +822,26 @@ class DrawingActivity:
     // Players List in the Nav Drawer      //
     /////////////////////////////////////////
 
-    // todo put this job in the adapter?
-    private var updatePlayersListJob: Job? = null // for cancelling the update job when new messages are received
-    private fun updatePlayersList(players: List<PlayerData>) {
-        updatePlayersListJob?.cancel() // cancel the previous job if it exists
-        updatePlayersListJob = lifecycleScope.launch {
-            rvPlayersAdapter.updateDataset(players)
+    private fun setupPlayerListInNavDrawer(navHeader: View) {
+        // Setup the recycler view for the list of players
+        //   note: because the PlayerAdapter constructor as no args, we have injected it (see @Inject)
+        val rvPlayers = navHeader.findViewById<RecyclerView>(R.id.rvPlayers)
+
+        rvPlayers.apply {
+            layoutManager = LinearLayoutManager(this@DrawingActivity)
+            adapter = rvPlayersAdapter
         }
+    }
+
+    //private var updatePlayersListJob: Job? = null // for cancelling the update job when new messages are received
+    private fun updatePlayersList(players: List<PlayerData>) {
+//        updatePlayersListJob?.cancel() // cancel the previous job if it exists
+//        updatePlayersListJob = lifecycleScope.launch {
+//            rvPlayersAdapter.updateDataset(players)
+//        }
 
         // Handle the job & cancellation in the RV (not here in the activity)
-        // chatMessageAdapter.updateChatMessageList(chatList, lifecycleScope) // replace at end todo
+        rvPlayersAdapter.updatePlayers(players, lifecycleScope)
     }
 
     ///////////////////////////////////////////////////////////////////

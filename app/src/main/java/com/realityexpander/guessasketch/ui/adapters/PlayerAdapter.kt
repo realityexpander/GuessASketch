@@ -5,15 +5,38 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.BaseMessageType
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.PlayerData
 import com.realityexpander.guessasketch.databinding.ItemPlayerBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
 
 // @AndroidEntryPoint is not needed here... interesting! Just the @Inject annotation is needed to use this as a provier
 class PlayerAdapter @Inject constructor():
     RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
+
+    ////////////////////////////////////////////////////////
+    /// PUBLIC METHODS & VARS TO BE USED BY THE ACTIVITY ///
+
+    var players = listOf<PlayerData>()
+        private set
+
+    var updatePlayersJob: Job? = null
+        private set
+    fun updatePlayers(newData: List<PlayerData>, lifecycleScope: CoroutineScope) {
+        updatePlayersJob?.cancel() // cancel the previous job if it exists
+        updatePlayersJob = lifecycleScope.launch {
+            updateDataset(newData)
+        }
+    }
+
+    suspend fun waitForPlayersToUpdate() {
+        updatePlayersJob?.join()
+    }
+
+
+    //////////////////////////////////////////////////
+    /// PRIVATE STUFF TO BE USED INTERNALLY        ///
 
     class PlayerViewHolder(val binding: ItemPlayerBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -44,9 +67,6 @@ class PlayerAdapter @Inject constructor():
             diff.dispatchUpdatesTo(this@PlayerAdapter)  // must happen on main thread
         }
     }
-
-    var players = listOf<PlayerData>()
-        private set
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
         return PlayerViewHolder(
