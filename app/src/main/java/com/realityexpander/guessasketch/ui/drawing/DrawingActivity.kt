@@ -41,6 +41,8 @@ import com.realityexpander.guessasketch.ui.common.Constants.SPEECH_RECOGNIZER_MA
 import com.realityexpander.guessasketch.ui.dialogs.LeaveDialog
 import com.realityexpander.guessasketch.ui.views.DrawingView
 import com.realityexpander.guessasketch.util.Constants
+import com.realityexpander.guessasketch.util.Constants.DEFAULT_PAINT_ERASER_STROKE_WIDTH
+import com.realityexpander.guessasketch.util.Constants.DEFAULT_PAINT_STROKE_WIDTH
 import com.realityexpander.guessasketch.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
@@ -735,11 +737,14 @@ class DrawingActivity:
     // Select the drawing color of the drawing view
     private fun selectColor(color: ColorInt) {
         curDrawingColor = color
-
         binding.drawingView.setColor(color)
 
-        // in case user has just used the eraser
-        binding.drawingView.setStrokeWidth(Constants.DEFAULT_PAINT_STROKE_WIDTH)
+        binding.drawingView.setStrokeWidth(DEFAULT_PAINT_STROKE_WIDTH)
+
+        // Did the user pick the eraser?
+        if(resourceColorToColorButtonIdMap[color] == R.id.rbEraser) {
+            binding.drawingView.setStrokeWidth(DEFAULT_PAINT_ERASER_STROKE_WIDTH)
+        }
 
         selectColorRadioButtonForColor(color) // update radio button selection
     }

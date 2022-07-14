@@ -13,4 +13,5 @@ object Constants {
 
     // Graphics
     const val DEFAULT_PAINT_STROKE_WIDTH = 12f
+    const val DEFAULT_PAINT_ERASER_STROKE_WIDTH = 24f
 }
