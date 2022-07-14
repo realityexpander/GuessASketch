@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.google.gson.Gson
 import com.realityexpander.guessasketch.data.remote.api.SetupApi
+import com.realityexpander.guessasketch.data.remote.common.Constants
 import com.realityexpander.guessasketch.data.remote.common.Constants.HTTP_BASE_URL
 import com.realityexpander.guessasketch.data.remote.common.Constants.QUERY_PARAMETER_CLIENT_ID
 import com.realityexpander.guessasketch.data.remote.common.Constants.WEBSOCKET_RECONNECT_INTERVAL
@@ -24,6 +25,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -40,13 +42,6 @@ const val CLIENT_ID = "clientId"
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    @Singleton
-    fun provideSetupRepository(
-        setupApi: SetupApi,
-        @ApplicationContext context: Context
-    ): SetupRepository = SetupRepositoryImpl(setupApi, context)
 
     @Singleton
     @Provides
@@ -84,39 +79,25 @@ object AppModule {
         return Gson()
     }
 
+    @Singleton // must match the @InstallIn()
+    @Provides
+    fun provideSetupRepository(
+        setupApi: SetupApi,
+        @ApplicationContext context: Context
+    ): SetupRepository = SetupRepositoryImpl(setupApi, context)
+
     // HTTP objects<->json conversion library
     @Singleton
     @Provides
     fun provideSetupApi(okHttpClient: OkHttpClient): SetupApi {
         return Retrofit.Builder()
-            .baseUrl(HTTP_BASE_URL)
+            .baseUrl(Constants.HTTP_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()
             .create(SetupApi::class.java)  // interface must be supplied here, unlike Scarlet
     }
 
-    // Websocket objects<->json conversion library
-    @Singleton
-    @Provides
-    fun provideDrawingApi(
-        app: Application,
-        okHttpClient: OkHttpClient,
-        gson: Gson,
-    ): DrawingApi {
-         return Scarlet.Builder()
-             .backoffStrategy(LinearBackoffStrategy(WEBSOCKET_RECONNECT_INTERVAL))
-             .lifecycle(AndroidLifecycle.ofApplicationForeground(app))  // sockets are kept for the lifetime of the app
-             .webSocketFactory(
-                    okHttpClient.newWebSocketFactory(
-                        WS_BASE_URL
-                    )
-                )
-             .addStreamAdapterFactory(FlowStreamAdapter.Factory)
-             .addMessageAdapterFactory(CustomGsonMessageAdapter.Factory(gson))
-            .build()
-            .create()  // return type is inferred from the return type of interface (DrawingApi)
-    }
 
     @Singleton
     @Provides

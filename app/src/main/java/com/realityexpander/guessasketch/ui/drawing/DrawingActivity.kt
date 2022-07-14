@@ -43,7 +43,6 @@ import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -351,13 +350,8 @@ class DrawingActivity:
                     // Set these again (in case of config change)
                     isDrawingPlayer = gameState.drawingPlayerName == args.playerName  // todo check for clientId not playerName
                     setColorButtonGroupIsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
-                    drawingView.isEnabled = isDrawingPlayer
-
-                    // only the guessing players can use the mic
-                    ibMic.isVisible = !isDrawingPlayer
 
                     // NOTE: drawing player can still use the chat Messages
-                    // todo should this be turned off for drawing player?
                     // setChatMessageInputIsVisible(!isDrawingPlayer)
                 }
             }
@@ -365,11 +359,11 @@ class DrawingActivity:
 
         // Game Phase Change (Time only updates are handled in gamePhaseTime)
         lifecycleScope.launchWhenStarted {
-            viewModel.gamePhaseChange.collect { gamePhaseUpdate ->
+            viewModel.gamePhaseChange.collect { gamePhaseChange ->
 
-                println("gamePhaseChange = $gamePhaseUpdate")
+                println("gamePhaseChange = $gamePhaseChange")
 
-                when(gamePhaseUpdate.gamePhase) {
+                when(gamePhaseChange.gamePhase) {
                     GamePhaseUpdate.GamePhase.INITIAL_STATE -> {
                         // do nothing
 
@@ -391,7 +385,7 @@ class DrawingActivity:
                     }
                     GamePhaseUpdate.GamePhase.WAITING_FOR_START -> {
                         binding.apply {
-                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt()
+                            roundTimerProgressBar.max = gamePhaseChange.countdownTimerMillis.toInt()
                             roundTimerProgressBar.progress = roundTimerProgressBar.max
                             roundTimerProgressBar.isIndeterminate = false
                             tvWordToGuessOrStatusMessage.text = getString(R.string.waiting_for_start)
@@ -400,8 +394,8 @@ class DrawingActivity:
                     }
                     GamePhaseUpdate.GamePhase.NEW_ROUND -> {
                         binding.apply {
-                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
-                            gamePhaseUpdate.drawingPlayerName?.let { drawingPlayerName ->
+                            roundTimerProgressBar.max = gamePhaseChange.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                            gamePhaseChange.drawingPlayerName?.let { drawingPlayerName ->
                                 tvWordToGuessOrStatusMessage.text = getString(R.string.drawing_player_is_choosing_word, drawingPlayerName)
                             }
 
@@ -410,34 +404,32 @@ class DrawingActivity:
                             selectColor(Color.BLACK) // reset drawing color to black
 
                             // Is this the drawing player? If yes, show the pick word overlay
-                            isDrawingPlayer = gamePhaseUpdate.drawingPlayerName == args.playerName
+                            isDrawingPlayer = gamePhaseChange.drawingPlayerName == args.playerName
                             viewModel.setPickWordOverlayVisible(isDrawingPlayer) // only the drawing player can choose a word
 
-                            // disable "undo" for everyone
-                            // (will be re-enabled when player is drawing player)
-                            ibUndo.isEnabled = false
+                            // disable drawing for everyone, except when player is drawing player
+                            setColorButtonGroupIsVisible(isDrawingPlayer)
 
-                            setChatMessageInputIsVisible(true)
+                            setChatMessageInputIsVisible(true) // everyone can use the chat
                         }
                     }
                     GamePhaseUpdate.GamePhase.ROUND_IN_PROGRESS -> {
                         binding.apply {
-                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                            roundTimerProgressBar.max = gamePhaseChange.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             viewModel.setPickWordOverlayVisible(false) // no one can pick the word anymore
                             setChatMessageInputIsVisible(true)
 
-                            if (gamePhaseUpdate.drawingPlayerName == args.playerName) {
-                                drawingView.isEnabled = true // only the drawingPlayer can draw
-                                ibUndo.isEnabled = false // only the drawingPlayer can undo
+                            if (gamePhaseChange.drawingPlayerName == args.playerName) {
+                                setColorButtonGroupIsVisible(true)
                             }
                         }
                     }
                     GamePhaseUpdate.GamePhase.ROUND_ENDED -> {
                         binding.apply {
-                            roundTimerProgressBar.max = gamePhaseUpdate.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
+                            roundTimerProgressBar.max = gamePhaseChange.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             drawingView.isEnabled = false // no one can draw while the word is being shown
                             setColorButtonGroupIsVisible(false) // no one can change the drawing color
-                            setChatMessageInputIsVisible(true)
+                            setChatMessageInputIsVisible(true) // everyone can still chat
 
                             // Finish the drawing if the player is currently drawing. (Force the stopTouch)
                             if (drawingView.isCanvasDrawing) {
@@ -462,7 +454,7 @@ class DrawingActivity:
                         }
                     }
                     else -> {
-                        Timber.DebugTree().e("DrawingActivity - Unexpected GamePhaseUpdate type: ${gamePhaseUpdate.gamePhase}")
+                        Timber.DebugTree().e("DrawingActivity - Unexpected GamePhaseUpdate type: ${gamePhaseChange.gamePhase}")
                     }
                 }
             }
@@ -595,18 +587,17 @@ class DrawingActivity:
     //   functionality and that requires the activity to be stopped while the permissions
     //   are being requested. This allows the game to continue while the permissions are
     //   being requested. This ON_STOP is only called when the activity is completely stopped.
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)  // fired when app is been minimized
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)  // fired when app has been minimized
     private fun onAppInBackground() {
-        viewModel.sendDisconnectRequest()
+        viewModel.sendTemporaryDisconnectRequest()
     }
 
     override fun onBackPressed() {
         LeaveDialog().apply {
             setPositiveClickListener {
-                viewModel.sendDisconnectRequest {
+                viewModel.sendPermanentDisconnectRequest {
                     viewModel.finalBackButtonPressed()
                 }
-
                 // finish() // don't call finish(), because this will close the app.
             }
         }.show(supportFragmentManager, "LeaveDialog")
@@ -771,6 +762,8 @@ class DrawingActivity:
     private fun setColorButtonGroupIsVisible(isVisible: Boolean) {
         binding.colorGroup.isVisible = isVisible
         binding.ibUndo.isVisible = isVisible
+        binding.ibUndo.isEnabled = isVisible
+        binding.drawingView.isEnabled = isVisible
     }
 
 
@@ -826,6 +819,7 @@ class DrawingActivity:
         binding.tilMessage.isVisible = isVisible
         binding.ibSend.isVisible = isVisible
         binding.ibClearText.isVisible = isVisible
+        binding.ibMic.isVisible = isVisible
     }
 
     private fun sendSetWordToGuessMessage(word: String, roomName: String) {
@@ -883,7 +877,7 @@ class DrawingActivity:
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
             binding.ibMic.isEnabled = true
-            showToast("Audio record permission granted")
+            showToast("Audio record & speech recognition permission granted")
         }
     }
 

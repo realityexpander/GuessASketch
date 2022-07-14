@@ -283,19 +283,22 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
-    fun sendDisconnectRequest(callWhenDone: (() -> Unit)? = null) {
-        sendBaseMessageType(DisconnectRequest(), callWhenDone)
+    fun sendTemporaryDisconnectRequest() {
+        sendBaseMessageType(DisconnectTemporarilyRequest())
+    }
+
+    fun sendPermanentDisconnectRequest(callWhenDone: (() -> Unit)? = null) {
+        sendBaseMessageType(DisconnectPermanentlyRequest(), callWhenDone)
     }
 
     fun finalBackButtonPressed() {
-
         viewModelScope.launch(dispatcher.main) {
             _onFinalBackButtonPressed.emit(Unit)
         }
     }
 
     ////////////////////////////////
-    // Speech Recognizer
+    // Speech Recognizer          //
     ////////////////////////////////
 
     fun startSpeechRecognizerListening() {
@@ -305,4 +308,5 @@ class DrawingViewModel @Inject constructor(
     fun stopSpeechRecognizerListening() {
         _isSpeechRecognizerListening.value = false
     }
+
 }

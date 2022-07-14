@@ -1,0 +1,5 @@
+package com.realityexpander.guessasketch.data.remote.ws.messageTypes
+
+import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessageType.TYPE_DISCONNECT_TEMPORARILY_REQUEST
+
+class DisconnectTemporarilyRequest: BaseMessageType(TYPE_DISCONNECT_TEMPORARILY_REQUEST)
