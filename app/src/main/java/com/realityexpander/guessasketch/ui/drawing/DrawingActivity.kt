@@ -352,7 +352,7 @@ class DrawingActivity:
                     setDrawingIsEnabledAndColorButtonsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
 
                     // NOTE: drawing player can still use the chat Messages
-                    // setChatMessageInputIsVisible(!isDrawingPlayer)
+                    // setChatMessageInputIsVisible(!isDrawingPlayer)  // this would disable the chat input for drawing playerp
                 }
             }
         }
@@ -592,6 +592,7 @@ class DrawingActivity:
         viewModel.sendTemporaryDisconnectRequest()
     }
 
+    // Back press to exit the room
     override fun onBackPressed() {
         LeaveDialog().apply {
             setPositiveClickListener {
