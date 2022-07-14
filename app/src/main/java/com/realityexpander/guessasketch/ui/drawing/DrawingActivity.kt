@@ -105,7 +105,7 @@ class DrawingActivity:
         viewModel.playerName = args.playerName
 
         // Setup the LifeCycleObserver
-        // (for when activity finally completely stops, not just paused for permissions
+        // (for when activity goes into background or stops, not just paused for permissions
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         // Setup the map of resource colors to radio button ids
