@@ -76,7 +76,7 @@ class DrawingViewModel @Inject constructor(
 
     // Game State
     private val _gameState =
-        MutableStateFlow(GameState("","",""))
+        MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState
 
     // Drawing Path Stack
@@ -175,7 +175,7 @@ class DrawingViewModel @Inject constructor(
     }
 
     // Observe the websocket messages of BaseMessageType
-    private fun observeSocketBaseMessages() {  // observeBaseModels - todo remove at end
+    private fun observeSocketBaseMessages() {
         viewModelScope.launch(dispatcher.io) {
             drawingApi.observeBaseMessages().collect { message ->
 
@@ -195,15 +195,12 @@ class DrawingViewModel @Inject constructor(
                     }
                     is GameState -> {
                         _gameState.value = message
-                        //_socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
                     }
                     is PlayersList -> {
                         _playersList.value = message
-                        //_socketBaseMessageEventChannel.send(message) // todo needed? maybe remove
                     }
                     is WordsToPick -> {
                         _wordsToPick.value = message
-                        //_socketBaseMessageEventChannel.send(message)  // todo is this used at all? remove?
                     }
                     is Ping -> {
                         // respond with a pong (just another ping, really)

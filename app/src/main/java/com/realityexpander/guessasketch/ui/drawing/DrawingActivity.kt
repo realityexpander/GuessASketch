@@ -341,14 +341,17 @@ class DrawingActivity:
                 binding.apply {
 
                     // Initial state?
-                    if(gameState.drawingPlayerName == "") return@collect  // if so, ignore it // todo make these null?
+                    gameState.drawingPlayerName?: return@collect  // if so, ignore it (it's the initial state)
+                    gameState.drawingPlayerClientId?: return@collect  // if so, ignore it (it's the initial state)
+                    gameState.wordToGuess?: return@collect  // if so, ignore it (it's the initial state)
 
                     // Gives the "word to guess" actual word to the drawing player.
                     // Server will send the "underscored" word to non-drawing players.
                     tvWordToGuessOrStatusMessage.text = gameState.wordToGuess
 
                     // Set these again (in case of config change)
-                    isDrawingPlayer = gameState.drawingPlayerName == args.playerName  // todo check for clientId not playerName
+                    //isDrawingPlayer = gameState.drawingPlayerName == args.playerName // old way, left for reference
+                    isDrawingPlayer = gameState.drawingPlayerClientId == clientId
                     setDrawingIsEnabledAndColorButtonsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
 
                     // NOTE: drawing player can still use the chat Messages
