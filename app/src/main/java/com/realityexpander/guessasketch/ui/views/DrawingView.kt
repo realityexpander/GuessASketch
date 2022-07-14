@@ -181,12 +181,12 @@ class DrawingView @JvmOverloads constructor(
     }
 
     private fun stopTouch() {
-        curX ?: return
-        curY ?: return
+        val currX = curX ?: return
+        val currY = curY ?: return
         if(!isCanvasStartedTouch) return
 
-        path.lineTo(curX!!, curY!!)         // todo remove the null checks
-        path.setLastPoint(curX!!, curY!!)
+        path.lineTo(currX, currY)
+        path.setLastPoint(currX, currY)
 
         // Add the path to the stack
         paths.push(PathData(path, paint.color, paint.strokeWidth))

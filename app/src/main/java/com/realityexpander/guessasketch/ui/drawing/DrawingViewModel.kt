@@ -153,7 +153,7 @@ class DrawingViewModel @Inject constructor(
         _pathStackData.value = stack
     }
 
-    private fun observeSocketConnectionEvents() {  // observeEvents - todo remove at end
+    private fun observeSocketConnectionEvents() {
         viewModelScope.launch(dispatcher.io) {
             drawingApi.observeSocketConnectionEvents().collect { event ->
                 when(event) {

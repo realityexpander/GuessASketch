@@ -31,7 +31,7 @@ class CustomGsonMessageAdapter<T> private constructor(
         ?: let {
             println("Error: Unknown SocketMessageType: $typeStr for $messageJson")
             BaseMessageType::class.java  // default to BaseMessageType
-            // throw IllegalArgumentException("Unknown message type") // todo - throw exception?
+            // throw IllegalArgumentException("Unknown message type") // don't throw exception, we want to see the message in the log
         }
 
         try {

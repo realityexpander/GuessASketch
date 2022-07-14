@@ -1,3 +1,3 @@
 package com.realityexpander.guessasketch.data.remote.ws.messageTypes
 
-abstract class BaseMessageType(val type: String)  // BaseModel - todo remove at end
+abstract class BaseMessageType(val type: String)

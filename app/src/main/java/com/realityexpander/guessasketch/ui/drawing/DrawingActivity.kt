@@ -237,7 +237,9 @@ class DrawingActivity:
 
     }
 
-    // For ActionBarDrawer  // todo is this used? remove?
+    // For ActionBarDrawer
+    //   This is used if there is a menu item in the action bar that opens the drawer
+    //   Currently, this is not used, but it is here if we want to add it in the future
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(toggleDrawer.onOptionsItemSelected(item)) {
             return true
@@ -499,7 +501,7 @@ class DrawingActivity:
 
                 when(message) {
                     is DrawData -> {
-                        // only draw server data if this user is NOT the drawing player
+                        // only draw the server data if this user is NOT the drawing player
                         // todo needed? currently server only sends the drawData to the non-drawing players
                         //    unless its updating the drawing player when rejoining the room.
                         //if(binding.drawingView.isEnabled) return@collect
@@ -522,7 +524,7 @@ class DrawingActivity:
                     is DrawAction -> {
                         // todo needed? currently server only sends the drawData to the non-drawing players
                         //    unless its updating the drawing player when rejoining the room.
-                        //if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player // todo needed?
+                        //if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player
 
                         when(message.action) {
                             DRAW_ACTION_UNDO -> { binding.drawingView.undo() }
@@ -967,7 +969,7 @@ class DrawingActivity:
     }
 
     ///////////////////////////////////////////////////////////////////
-    // Utils                                                         //
+    // UI Utils                                                      //
     ///////////////////////////////////////////////////////////////////
 
     private fun showToast(message: String) {

@@ -13,8 +13,8 @@ interface DrawingApi {
     fun observeSocketConnectionEvents(): Flow<WebSocket.Event>
 
     @Send
-    fun sendBaseMessage(baseModel: BaseMessageType): Boolean  // true if successful // sendBaseModel todo remove at end
+    fun sendBaseMessage(baseModel: BaseMessageType): Boolean  // true if successful
 
     @Receive
-    fun observeBaseMessages(): Flow<BaseMessageType>  // observeBaseModels todo remove at end
+    fun observeBaseMessages(): Flow<BaseMessageType>
 }
