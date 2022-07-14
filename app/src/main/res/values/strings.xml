@@ -53,4 +53,6 @@
     <string name="error_unknown">Unknown Error</string>
     <string name="create">Create</string>
     <string name="connection_failed">Connection to server failed.</string>
+    <string name="speech_recognizer_deciphering_words">Deciphering words...</string>
+    <string name="speech_recognizer_unknown_word">Unknown word(s)</string>
 </resources>

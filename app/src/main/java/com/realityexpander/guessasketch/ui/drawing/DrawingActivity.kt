@@ -920,12 +920,11 @@ class DrawingActivity:
     /// Speech Recognizer receivers ///
 
     override fun onReadyForSpeech(params: Bundle?) {
-        // binding.etMessage.text?.clear() // todo if the user is writing a message, should we keep it?
         binding.etMessage.hint = getString(R.string.speech_recognizer_listening)
     }
 
     override fun onBeginningOfSpeech() {
-        binding.etMessage.hint = "Deciphering words..."
+        binding.etMessage.hint = getString(R.string.speech_recognizer_deciphering_words)
     }
 
     override fun onRmsChanged(rmsdB: Float) {
@@ -949,7 +948,7 @@ class DrawingActivity:
         val wordsToGuess = strings?.get(0) ?: ""
 
         if (wordsToGuess == "")
-            binding.etMessage.hint = "Unknown word"
+            binding.etMessage.hint = getString(R.string.speech_recognizer_unknown_word)
         else {
             (binding.etMessage.text.toString() + " " + wordsToGuess).let {
                 binding.etMessage.setText(it)
