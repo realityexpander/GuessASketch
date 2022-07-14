@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.TypedValue
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
@@ -40,15 +39,12 @@ import com.realityexpander.guessasketch.ui.adapters.PlayerAdapter
 import com.realityexpander.guessasketch.ui.common.Constants.SPEECH_RECOGNIZER_MAX_NUM_WORDS_MAX_RESULTS
 import com.realityexpander.guessasketch.ui.dialogs.LeaveDialog
 import com.realityexpander.guessasketch.ui.views.DrawingView
-import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.Constants.DEFAULT_PAINT_ERASER_STROKE_WIDTH
 import com.realityexpander.guessasketch.util.Constants.DEFAULT_PAINT_STROKE_WIDTH
 import com.realityexpander.guessasketch.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
@@ -96,6 +92,9 @@ class DrawingActivity:
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var speechRecognizerIntent: Intent
 
+    // Drawing view restore after config change
+    var handledPathDataStackRestoreAfterConfigChange = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +102,7 @@ class DrawingActivity:
         setContentView(binding.root)
 
         viewModel.playerName = args.playerName
+        handledPathDataStackRestoreAfterConfigChange = false
 
         // Setup the LifeCycleObserver
         // (for when activity goes into background or stops, not just paused for permissions
@@ -150,8 +150,9 @@ class DrawingActivity:
         }
 
         // Drawing Path Data Stack listener
-        binding.drawingView.setPathDataStackChangedListener { pathStack ->
-            viewModel.setPathStackData(pathStack)
+        //   Used to listen to the DrawingView's touches and send the pathData *TO* the server
+        binding.drawingView.setPathDataStackChangedListener { pathDataStack ->
+            viewModel.setPathDataStack(pathDataStack)
         }
 
         // Setup Speech recognition
@@ -491,6 +492,16 @@ class DrawingActivity:
         lifecycleScope.launchWhenStarted {
             viewModel.onFinalBackButtonPressed.collect {
                 super.onBackPressed() // call the super method to exit the activity
+            }
+        }
+
+        // Restore Drawing PathStackData after config change
+        lifecycleScope.launchWhenStarted {
+            viewModel.pathDataStack.collect { pathStackData ->
+                if(!handledPathDataStackRestoreAfterConfigChange) {
+                    binding.drawingView.restorePathDataStack(pathStackData)
+                    handledPathDataStackRestoreAfterConfigChange = true // we handled the config change, so we can ignore it next time
+                }
             }
         }
     }

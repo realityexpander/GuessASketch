@@ -71,13 +71,17 @@ class DrawingView @JvmOverloads constructor(
 
     data class PathData(val path: Path, val color: Int, val thickness: Float)
 
-    private var path = Path()
-    private var paths = Stack<PathData>()
+    private var path = Path() // current path being drawn
+    private var pathDataStack = Stack<PathData>() // stack of all paths drawn
 
-    // Called when the Stack of Paths has changed (ie: from the server from another player)
+    // Called when the Stack of Paths has changed from touches (to send pathData to the server)
     private var pathDataStackChangedListener: ( (Stack<PathData>) -> Unit)? = null
     fun setPathDataStackChangedListener(listener: ( (Stack<PathData>) -> Unit) ) {
         pathDataStackChangedListener = listener
+    }
+
+    fun restorePathDataStack(pathDataStack: Stack<PathData>) {
+        this.pathDataStack = pathDataStack
     }
 
     // Respond to the user of the device drawing on the screen with finger or stylus
@@ -119,13 +123,13 @@ class DrawingView @JvmOverloads constructor(
         val initialThickness = paint.strokeWidth
 
         // Fresh canvas
-        if (paths.size == 0 && !isCanvasDrawing) {
+        if (pathDataStack.size == 0 && !isCanvasDrawing) {
             canvas?.drawColor(Color.WHITE)
            return
         }
 
         // Draw the previous paths
-        for(prevPath in paths) {
+        for(prevPath in pathDataStack) {
             paint.apply {
                 color = prevPath.color
                 strokeWidth = prevPath.thickness
@@ -188,10 +192,10 @@ class DrawingView @JvmOverloads constructor(
         path.lineTo(currX, currY)
         path.setLastPoint(currX, currY)
 
-        // Add the path to the stack
-        paths.push(PathData(path, paint.color, paint.strokeWidth))
-        pathDataStackChangedListener?.let { pathDataChanged ->
-            pathDataChanged(paths)
+        // Add the path to the PathData stack
+        pathDataStack.push(PathData(path, paint.color, paint.strokeWidth))
+        pathDataStackChangedListener?.let { pathDataStackChanged ->
+            pathDataStackChanged(pathDataStack)
         }
 
         isCanvasStartedTouch = false
@@ -201,7 +205,7 @@ class DrawingView @JvmOverloads constructor(
 
     fun clearDrawing() {
         canvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY)
-        paths.clear()
+        pathDataStack.clear()
         path.reset()
 
         invalidate()
@@ -213,10 +217,10 @@ class DrawingView @JvmOverloads constructor(
     }
 
     fun undo() {
-        if(paths.isNotEmpty()) {
-            paths.pop()
+        if(pathDataStack.isNotEmpty()) {
+            pathDataStack.pop()
             pathDataStackChangedListener?.let { pathDataStackChanged ->
-                pathDataStackChanged(paths)
+                pathDataStackChanged(pathDataStack)
             }
         }
 

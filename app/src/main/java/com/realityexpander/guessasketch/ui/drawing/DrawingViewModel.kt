@@ -79,10 +79,10 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState
 
-    // Drawing Path Stack
-    private val _pathStackData =
+    // Drawing PathData Stack
+    private val _pathDataStack =
         MutableStateFlow(Stack<DrawingView.PathData>())
-    val pathStackData: StateFlow<Stack<DrawingView.PathData>> = _pathStackData
+    val pathDataStack: StateFlow<Stack<DrawingView.PathData>> = _pathDataStack
 
     // Players List (list of PlayerData)
     // Words To Pick (3 words that the drawing player picks one of to draw)
@@ -149,8 +149,8 @@ class DrawingViewModel @Inject constructor(
         _selectedColorButtonId.value = id
     }
 
-    fun setPathStackData(stack: Stack<DrawingView.PathData>) {
-        _pathStackData.value = stack
+    fun setPathDataStack(stack: Stack<DrawingView.PathData>) {
+        _pathDataStack.value = stack
     }
 
     private fun observeSocketConnectionEvents() {
