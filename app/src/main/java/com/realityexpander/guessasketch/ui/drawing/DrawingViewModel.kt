@@ -95,6 +95,11 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(false)
     val isSpeechRecognizerListening: StateFlow<Boolean> = _isSpeechRecognizerListening
 
+    // Back button pressed for final exit from room
+    private val _onFinalBackButtonPressed =
+        MutableSharedFlow<Unit>(0)
+    val onFinalBackButtonPressed: SharedFlow<Unit> = _onFinalBackButtonPressed
+
     //////////////////////////////
     /// WebSocket events       ///
     //////////////////////////////
@@ -105,12 +110,14 @@ class DrawingViewModel @Inject constructor(
     // Socket connection events
     private val _socketConnectionEventChannel =
         Channel<WebSocket.Event>()
-    val socketConnectionEventChannel = _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
+    val socketConnectionEventChannel =
+        _socketConnectionEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     // Socket BaseMessage events
     private val _socketBaseMessageEventChannel =
         Channel<BaseMessageType>()
-    val socketBaseMessageEventChannel = _socketBaseMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
+    val socketBaseMessageEventChannel =
+        _socketBaseMessageEventChannel.receiveAsFlow().flowOn(dispatcher.io)
 
     //////////////////////////////
 
@@ -278,6 +285,13 @@ class DrawingViewModel @Inject constructor(
 
     fun sendDisconnectRequest(callWhenDone: (() -> Unit)? = null) {
         sendBaseMessageType(DisconnectRequest(), callWhenDone)
+    }
+
+    fun finalBackButtonPressed() {
+
+        viewModelScope.launch(dispatcher.main) {
+            _onFinalBackButtonPressed.emit(Unit)
+        }
     }
 
     ////////////////////////////////

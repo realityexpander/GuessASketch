@@ -43,6 +43,7 @@ import com.realityexpander.guessasketch.util.Constants
 import com.realityexpander.guessasketch.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -488,6 +489,13 @@ class DrawingActivity:
                 }
             }
         }
+
+        // onFinalBackButtonPressed
+        lifecycleScope.launchWhenStarted {
+            viewModel.onFinalBackButtonPressed.collect {
+                super.onBackPressed() // call the super method to exit the activity
+            }
+        }
     }
 
     private fun listenToSocketBaseMessageEvents() {
@@ -596,7 +604,7 @@ class DrawingActivity:
         LeaveDialog().apply {
             setPositiveClickListener {
                 viewModel.sendDisconnectRequest {
-                    super.onBackPressed() // call the super method to exit the activity
+                    viewModel.finalBackButtonPressed()
                 }
 
                 // finish() // don't call finish(), because this will close the app.
