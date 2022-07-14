@@ -1,15 +1,12 @@
 package com.realityexpander.guessasketch.ui.adapters
 
-import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.realityexpander.guessasketch.R
-import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.Announcement
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.BaseMessageType
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.ChatMessage
@@ -31,8 +28,29 @@ class ChatMessageAdapter constructor(
 ):
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+
+    ////////////////////////////////////////////////////////
+    /// PUBLIC METHODS & VARS TO BE USED BY THE ACTIVITY ///
+
     var chatItems = listOf<BaseMessageType>()
         private set
+
+    var updateChatMessagesJob: Job? = null
+        private set
+    fun updateChatMessages(newData: List<BaseMessageType>, lifecycleScope: CoroutineScope) {
+        updateChatMessagesJob?.cancel() // cancel the previous job if it exists
+        updateChatMessagesJob = lifecycleScope.launch {
+            updateDataset(newData)
+        }
+    }
+
+    suspend fun waitForChatMessagesToUpdate() {
+        updateChatMessagesJob?.join()
+    }
+
+
+    //////////////////////////////////////////////////
+    /// PRIVATE STUFF TO BE USED INTERNALLY        ///
 
     class IncomingChatMessageViewHolder(val binding: ItemChatMessageIncomingBinding):
         RecyclerView.ViewHolder(binding.root)
@@ -43,16 +61,8 @@ class ChatMessageAdapter constructor(
     class AnnouncementViewHolder(val binding: ItemAnnouncementBinding):
         RecyclerView.ViewHolder(binding.root)
 
-    private var updateChatMessagesJob: Job? = null
-    fun updateChatMessageList(newData: List<BaseMessageType>, lifecycleScope: CoroutineScope) {
-        updateChatMessagesJob?.cancel() // cancel the previous job if it exists
-        updateChatMessagesJob = lifecycleScope.launch {
-            updateDataset(newData)
-        }
-    }
-
     // This job must be cancelled when the adapter is destroyed to avoid memory leaks.
-    suspend fun updateDataset(newDataset: List<BaseMessageType>) = withContext(Dispatchers.Default) {
+    private suspend fun updateDataset(newDataset: List<BaseMessageType>) = withContext(Dispatchers.Default) {
         val diff = DiffUtil.calculateDiff(object: DiffUtil.Callback() {
 
             override fun getOldListSize(): Int {

@@ -292,7 +292,7 @@ class DrawingActivity:
         lifecycleScope.launchWhenStarted {
             viewModel.chatMessages.collect { chatItems ->
                 if(rvChatMessageAdapter.chatItems.isEmpty()) {
-                    updateChatMessagesList(chatItems)
+                    updateChatMessages(chatItems)
                 }
             }
         }
@@ -791,15 +791,15 @@ class DrawingActivity:
     }
 
     // todo put this job in the adapter?
-    private var updateChatMessagesJob: Job? = null // for cancelling the update job when new messages are received
-    private fun updateChatMessagesList(chatList: List<BaseMessageType>) {
-        updateChatMessagesJob?.cancel() // cancel the previous job if it exists
-        updateChatMessagesJob = lifecycleScope.launch {
-            rvChatMessageAdapter.updateDataset(chatList)
-        }
+//    private var updateChatMessagesJob: Job? = null // for cancelling the update job when new messages are received
+    private fun updateChatMessages(chatList: List<BaseMessageType>) {
+//        updateChatMessagesJob?.cancel() // cancel the previous job if it exists
+//        updateChatMessagesJob = lifecycleScope.launch {
+//            rvChatMessageAdapter.updateDataset(chatList)
+//        }
 
         // Handle the job & cancellation in the RV (not here in the activity)
-        // chatMessageAdapter.updateChatMessageList(chatList, lifecycleScope) // replace at end todo
+        rvChatMessageAdapter.updateChatMessages(chatList, lifecycleScope) // replace at end todo
     }
 
     private suspend fun addChatItemToChatMessagesAndScroll(chatItem: BaseMessageType) {
@@ -809,10 +809,11 @@ class DrawingActivity:
         val isScrolledToBottom = !binding.rvChat.canScrollVertically(CAN_SCROLL_DOWN)
 
         // Add the chat item to the bottom of the chat messages list
-        updateChatMessagesList(rvChatMessageAdapter.chatItems + chatItem)
+        updateChatMessages(rvChatMessageAdapter.chatItems + chatItem)
 
         // wait for the update job to finish before (possibly) scrolling down to see the new message.
-        updateChatMessagesJob?.join()
+//        updateChatMessagesJob?.join() // todo remove
+        rvChatMessageAdapter.waitForChatMessagesToUpdate()
 
         // Is the user scrolled to the bottom of the list? If so, scroll down to reveal new message.
         if (isScrolledToBottom) {
