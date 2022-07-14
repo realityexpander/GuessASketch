@@ -6,6 +6,7 @@ data class GamePhaseUpdate(
     var gamePhase: GamePhase? = null,  // if not null, causes a phase change. If null, it's not serialized.
     var countdownTimerMillis: Long = 0L,
     val drawingPlayerName: String? = null,
+    val drawingPlayerClientId: String? = null
 ): BaseMessageType(TYPE_GAME_PHASE_UPDATE) {
 
     enum class GamePhase {

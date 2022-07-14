@@ -350,7 +350,6 @@ class DrawingActivity:
                     tvWordToGuessOrStatusMessage.text = gameState.wordToGuess
 
                     // Set these again (in case of config change)
-                    //isDrawingPlayer = gameState.drawingPlayerName == args.playerName // old way, left for reference
                     isDrawingPlayer = gameState.drawingPlayerClientId == clientId
                     setDrawingIsEnabledAndColorButtonsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
 
@@ -407,7 +406,8 @@ class DrawingActivity:
                             selectColor(Color.BLACK) // reset drawing color to black
 
                             // Is this the drawing player? If yes, show the pick word overlay
-                            isDrawingPlayer = gamePhaseChange.drawingPlayerName == args.playerName
+                            //isDrawingPlayer = gamePhaseChange.drawingPlayerName == args.playerName
+                            isDrawingPlayer = gamePhaseChange.drawingPlayerClientId == clientId
                             viewModel.setPickWordOverlayVisible(isDrawingPlayer) // only the drawing player can choose a word
 
                             // disable drawing for everyone, except when player is drawing player
@@ -422,7 +422,7 @@ class DrawingActivity:
                             viewModel.setPickWordOverlayVisible(false) // no one can pick the word anymore
                             setChatMessageInputIsVisible(true)
 
-                            if (gamePhaseChange.drawingPlayerName == args.playerName) {
+                            if (gamePhaseChange.drawingPlayerClientId == clientId) {
                                 setDrawingIsEnabledAndColorButtonsVisible(true)
                             }
                         }
@@ -500,8 +500,9 @@ class DrawingActivity:
                 when(message) {
                     is DrawData -> {
                         // only draw the server data if this user is NOT the drawing player
-                        // todo needed? currently server only sends the drawData to the non-drawing players
-                        //    unless its updating the drawing player when rejoining the room.
+                        //   todo needed?
+                        // currently server only sends the drawData to the non-drawing players
+                        //   unless its updating the drawing player when rejoining the room.
                         //if(binding.drawingView.isEnabled) return@collect
 
                         when (message.motionEvent) {
@@ -520,7 +521,8 @@ class DrawingActivity:
                         }
                     }
                     is DrawAction -> {
-                        // todo needed? currently server only sends the drawData to the non-drawing players
+                        // todo needed?
+                        // currently server only sends the drawData to the non-drawing players
                         //    unless its updating the drawing player when rejoining the room.
                         //if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player
 
@@ -789,7 +791,7 @@ class DrawingActivity:
     }
 
     private fun updateChatMessages(chatList: List<BaseMessageType>) {
-        rvChatMessageAdapter.updateChatMessages(chatList, lifecycleScope) // replace at end todo
+        rvChatMessageAdapter.updateChatMessages(chatList, lifecycleScope)
     }
 
     private suspend fun addChatItemToChatMessagesAndScroll(chatItem: BaseMessageType) {
