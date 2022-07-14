@@ -349,7 +349,7 @@ class DrawingActivity:
 
                     // Set these again (in case of config change)
                     isDrawingPlayer = gameState.drawingPlayerName == args.playerName  // todo check for clientId not playerName
-                    setColorButtonGroupIsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
+                    setDrawingIsEnabledAndColorButtonsVisible(isDrawingPlayer) // only the drawingPlayer can change the drawing color
 
                     // NOTE: drawing player can still use the chat Messages
                     // setChatMessageInputIsVisible(!isDrawingPlayer)
@@ -367,7 +367,7 @@ class DrawingActivity:
                     GamePhaseUpdate.GamePhase.INITIAL_STATE -> {
                         // do nothing
 
-                        setColorButtonGroupIsVisible(false)
+                        setDrawingIsEnabledAndColorButtonsVisible(false)
                         setChatMessageInputIsVisible(false)
                     }
                     GamePhaseUpdate.GamePhase.WAITING_FOR_PLAYERS -> {
@@ -408,7 +408,7 @@ class DrawingActivity:
                             viewModel.setPickWordOverlayVisible(isDrawingPlayer) // only the drawing player can choose a word
 
                             // disable drawing for everyone, except when player is drawing player
-                            setColorButtonGroupIsVisible(isDrawingPlayer)
+                            setDrawingIsEnabledAndColorButtonsVisible(isDrawingPlayer)
 
                             setChatMessageInputIsVisible(true) // everyone can use the chat
                         }
@@ -420,7 +420,7 @@ class DrawingActivity:
                             setChatMessageInputIsVisible(true)
 
                             if (gamePhaseChange.drawingPlayerName == args.playerName) {
-                                setColorButtonGroupIsVisible(true)
+                                setDrawingIsEnabledAndColorButtonsVisible(true)
                             }
                         }
                     }
@@ -428,7 +428,7 @@ class DrawingActivity:
                         binding.apply {
                             roundTimerProgressBar.max = gamePhaseChange.countdownTimerMillis.toInt() // set the max value of the progress bar to the round time
                             drawingView.isEnabled = false // no one can draw while the word is being shown
-                            setColorButtonGroupIsVisible(false) // no one can change the drawing color
+                            setDrawingIsEnabledAndColorButtonsVisible(false) // no one can draw
                             setChatMessageInputIsVisible(true) // everyone can still chat
 
                             // Finish the drawing if the player is currently drawing. (Force the stopTouch)
@@ -759,11 +759,11 @@ class DrawingActivity:
         )
     }
 
-    private fun setColorButtonGroupIsVisible(isVisible: Boolean) {
-        binding.colorGroup.isVisible = isVisible
-        binding.ibUndo.isVisible = isVisible
-        binding.ibUndo.isEnabled = isVisible
-        binding.drawingView.isEnabled = isVisible
+    private fun setDrawingIsEnabledAndColorButtonsVisible(isEnabled: Boolean) {
+        binding.colorGroup.isVisible = isEnabled
+        binding.ibUndo.isVisible = isEnabled
+        binding.ibUndo.isEnabled = isEnabled
+        binding.drawingView.isEnabled = isEnabled
     }
 
 
