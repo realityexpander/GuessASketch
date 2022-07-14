@@ -6,6 +6,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.realityexpander.guessasketch.ui.common.Constants.DEFAULT_PAINT_STROKE_WIDTH
 import com.realityexpander.guessasketch.util.Constants
 import java.util.*
 import kotlin.math.abs
@@ -33,7 +34,7 @@ class DrawingView @JvmOverloads constructor(
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
-        strokeWidth = Constants.DEFAULT_PAINT_STROKE_WIDTH
+        strokeWidth = DEFAULT_PAINT_STROKE_WIDTH
     }
 
     fun setStrokeWidth(thickness: Float) {

@@ -36,11 +36,11 @@ import com.realityexpander.guessasketch.databinding.ActivityDrawingBinding
 import com.realityexpander.guessasketch.di.CLIENT_ID
 import com.realityexpander.guessasketch.ui.adapters.ChatMessageAdapter
 import com.realityexpander.guessasketch.ui.adapters.PlayerAdapter
+import com.realityexpander.guessasketch.ui.common.Constants.DEFAULT_PAINT_ERASER_STROKE_WIDTH
+import com.realityexpander.guessasketch.ui.common.Constants.DEFAULT_PAINT_STROKE_WIDTH
 import com.realityexpander.guessasketch.ui.common.Constants.SPEECH_RECOGNIZER_MAX_NUM_WORDS_MAX_RESULTS
 import com.realityexpander.guessasketch.ui.dialogs.LeaveDialog
 import com.realityexpander.guessasketch.ui.views.DrawingView
-import com.realityexpander.guessasketch.util.Constants.DEFAULT_PAINT_ERASER_STROKE_WIDTH
-import com.realityexpander.guessasketch.util.Constants.DEFAULT_PAINT_STROKE_WIDTH
 import com.realityexpander.guessasketch.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint

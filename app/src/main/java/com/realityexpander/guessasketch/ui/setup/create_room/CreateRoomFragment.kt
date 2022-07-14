@@ -12,9 +12,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentCreateRoomBinding
+import com.realityexpander.guessasketch.ui.common.Constants.MAX_ROOM_NAME_LENGTH
+import com.realityexpander.guessasketch.ui.common.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.ui.setup.create_room.CreateRoomViewModel.SetupEvent
-import com.realityexpander.guessasketch.util.Constants.MAX_ROOM_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.hideKeyboard
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar

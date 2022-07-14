@@ -9,10 +9,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentPlayerNameBinding
+import com.realityexpander.guessasketch.ui.common.Constants.MAX_PLAYER_NAME_LENGTH
+import com.realityexpander.guessasketch.ui.common.Constants.MIN_PLAYER_NAME_LENGTH
 import dagger.hilt.android.AndroidEntryPoint
 import com.realityexpander.guessasketch.ui.setup.select_username.UsernameViewModel.SetupEvent.*
-import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
 import com.realityexpander.guessasketch.util.hideKeyboard
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar

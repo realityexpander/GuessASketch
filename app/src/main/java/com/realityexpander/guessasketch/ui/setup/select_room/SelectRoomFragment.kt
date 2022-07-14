@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.realityexpander.guessasketch.R
 import com.realityexpander.guessasketch.databinding.FragmentSelectRoomBinding
 import com.realityexpander.guessasketch.ui.adapters.RoomAdapter
+import com.realityexpander.guessasketch.ui.common.Constants.SEARCH_TEXT_DEBOUNCE_DELAY_MILLIS
 import com.realityexpander.guessasketch.ui.setup.select_room.SelectRoomViewModel.SetupEvent
 import com.realityexpander.guessasketch.ui.setup.select_room.SelectRoomViewModel.RoomsEvent
-import com.realityexpander.guessasketch.util.Constants.SEARCH_TEXT_DEBOUNCE_DELAY_MILLIS
 import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
 import dagger.hilt.android.AndroidEntryPoint
