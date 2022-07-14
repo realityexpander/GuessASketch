@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.util.TypedValue
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
@@ -139,6 +140,10 @@ class DrawingActivity:
                 )
             )
             binding.etMessage.text?.clear()
+
+            // reset the text view to default size
+            binding.etMessage.height = binding.etMessage.lineHeight
+
             hideKeyboard(binding.root)
         }
 
@@ -214,6 +219,7 @@ class DrawingActivity:
             binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
             binding.root.openDrawer(GravityCompat.START)
         }
+
         binding.root.addDrawerListener( object : DrawerLayout.DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) = Unit
             override fun onDrawerOpened(drawerView: View) = Unit
@@ -833,15 +839,12 @@ class DrawingActivity:
         }
     }
 
-    //private var updatePlayersListJob: Job? = null // for cancelling the update job when new messages are received
     private fun updatePlayersList(players: List<PlayerData>) {
-//        updatePlayersListJob?.cancel() // cancel the previous job if it exists
-//        updatePlayersListJob = lifecycleScope.launch {
-//            rvPlayersAdapter.updateDataset(players)
-//        }
+        // Add the room name to the players list (hacky)
+        val playersWithRoomNameFirst =
+            listOf(PlayerData("Room: ${args.roomName}")) + players
 
-        // Handle the job & cancellation in the RV (not here in the activity)
-        rvPlayersAdapter.updatePlayers(players, lifecycleScope)
+        rvPlayersAdapter.updatePlayers(playersWithRoomNameFirst, lifecycleScope)
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -947,8 +950,11 @@ class DrawingActivity:
 
         if (wordsToGuess == "")
             binding.etMessage.hint = "Unknown word"
-        else
-            binding.etMessage.setText(wordsToGuess)
+        else {
+            (binding.etMessage.text.toString() + " " + wordsToGuess).let {
+                binding.etMessage.setText(it)
+            }
+        }
 
         speechRecognizer.stopListening()
         viewModel.stopSpeechRecognizerListening()

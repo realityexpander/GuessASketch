@@ -83,9 +83,15 @@ class PlayerAdapter @Inject constructor():
 
         holder.binding.apply {
             tvPlayername.text = player.playerName
-            "${player.rank.toString()}.".also { tvRank.text = it }
-            tvScore.text = player.score.toString()
-            ivPencil.isVisible = player.isDrawingPlayer
+            ivPencil.isVisible = false
+            tvRank.text = ""
+            tvScore.text = ""
+
+            if (position != 0) {  // first item is the room name (hacky)
+                "${player.rank}.".also { tvRank.text = it }
+                tvScore.text = player.score.toString()
+                ivPencil.isVisible = player.isDrawingPlayer
+            }
 
             // Respond to click on this player item
             root.setOnClickListener {
