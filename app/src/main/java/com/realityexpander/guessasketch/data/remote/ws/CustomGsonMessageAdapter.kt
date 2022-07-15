@@ -6,6 +6,7 @@ import com.realityexpander.guessasketch.data.remote.ws.messageTypes.BaseMessageT
 import com.realityexpander.guessasketch.data.remote.ws.messageTypes.SocketMessageType
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.MessageAdapter
+import timber.log.Timber
 import java.lang.reflect.Type
 
 class CustomGsonMessageAdapter<T> private constructor(
@@ -29,7 +30,7 @@ class CustomGsonMessageAdapter<T> private constructor(
         // Convert "type" to a socket message class to be used for gson deserialization
         val type = SocketMessageType.messageTypeMap[typeStr] // table lookup
         ?: let {
-            println("Error: Unknown SocketMessageType: $typeStr for $messageJson")
+            Timber.e("Error: Unknown SocketMessageType: $typeStr for $messageJson")
             BaseMessageType::class.java  // default to BaseMessageType
             // throw IllegalArgumentException("Unknown message type") // don't throw exception, we want to see the message in the log
         }
@@ -41,7 +42,7 @@ class CustomGsonMessageAdapter<T> private constructor(
             @Suppress("UNCHECKED_CAST")
             return payload!! as T
         } catch (e: Exception) {
-            println("CustomGsonMessageAdapter - Error: Could not convert payload to $typeStr")
+            Timber.e("CustomGsonMessageAdapter - Error: Could not convert payload to $typeStr")
             throw e
         }
         //handleFrame(this, session.clientId, messageJson, payload)

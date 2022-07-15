@@ -166,8 +166,7 @@ class DrawingViewModel @Inject constructor(
                         // do nothing since we will get all events (that we didn't handle) from the websocket
                         // including SocketBaseMessages
 
-                        // println("SocketConnection unhandled Event: $event")
-                        // Timber.d("observeSocketConnectionEvents - Unhandled socket event: $event")
+                        Timber.w("observeSocketConnectionEvents - Unhandled socket event: $event")
                     }
                 }
             }
@@ -224,7 +223,7 @@ class DrawingViewModel @Inject constructor(
                         }
                     }
                     is CurRoundDrawData -> {
-                        // We get a message with a list of json strings that represent that draw data for the current round
+                        // We get a message with a list of json strings that represents that draw data for the current round
                         // We need to convert this to a list of DrawData and DrawAction objects
                         message.data.forEach { json ->
                             // Convert json string to a jsonObject for easier parsing
@@ -262,7 +261,7 @@ class DrawingViewModel @Inject constructor(
     // Send messages to the socket for the server to handle
     fun <T:BaseMessageType> sendBaseMessageType(data: T, callWhenDone: (() -> Unit)? = null) {
         viewModelScope.launch(dispatcher.io) {
-            println("Sending message: ${data.javaClass.simpleName} --> $data")
+            Timber.i("Sending message: ${data.javaClass.simpleName} --> $data")
             drawingApi.sendBaseMessage(data)
 
             // Call the callback when the message is sent
@@ -275,7 +274,6 @@ class DrawingViewModel @Inject constructor(
         if (message.message.trim().isEmpty()) return
 
         viewModelScope.launch(dispatcher.io) {
-            // println("Sending message: $message")
             drawingApi.sendBaseMessage(message)
         }
     }

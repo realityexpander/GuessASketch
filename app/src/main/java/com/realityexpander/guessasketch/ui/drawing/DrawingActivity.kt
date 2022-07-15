@@ -366,7 +366,7 @@ class DrawingActivity:
         lifecycleScope.launchWhenStarted {
             viewModel.gamePhaseChange.collect { gamePhaseChange ->
 
-                println("gamePhaseChange = $gamePhaseChange")
+                Timber.i("gamePhaseChange = $gamePhaseChange")
 
                 when(gamePhaseChange.gamePhase) {
                     GamePhaseUpdate.GamePhase.INITIAL_STATE -> {
@@ -512,12 +512,6 @@ class DrawingActivity:
 
                 when(message) {
                     is DrawData -> {
-                        // only draw the server data if this user is NOT the drawing player
-                        //   todo needed?
-                        // currently server only sends the drawData to the non-drawing players
-                        //   unless its updating the drawing player when rejoining the room.
-                        //if(binding.drawingView.isEnabled) return@collect
-
                         when (message.motionEvent) {
                             DRAW_DATA_MOTION_EVENT_ACTION_DOWN,
                             DRAW_DATA_MOTION_EVENT_ACTION_MOVE,
@@ -534,11 +528,6 @@ class DrawingActivity:
                         }
                     }
                     is DrawAction -> {
-                        // todo needed?
-                        // currently server only sends the drawData to the non-drawing players
-                        //    unless its updating the drawing player when rejoining the room.
-                        //if(binding.drawingView.isEnabled) return@collect // only draw server data if this user is NOT drawing player
-
                         when(message.action) {
                             DRAW_ACTION_UNDO -> { binding.drawingView.undo() }
                             DRAW_ACTION_DRAW -> { /* do nothing */ }
@@ -602,10 +591,11 @@ class DrawingActivity:
 
     // Lifecycle Observer
     // The reason we call this instead of onStop is because we are using the voice recording
-    //   functionality and that requires the activity to be stopped while the permissions
+    //   functionality and it requires the activity to be stopped while recording permissions
     //   are being requested. This allows the game to continue while the permissions are
-    //   being requested. This ON_STOP is only called when the activity is completely stopped.
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)  // fired when app has been minimized
+    //   being requested. This @OnLifecycleEvent ON_STOP is called *ONLY* when the activity has
+    //   completely stopped.
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)  // fired *only* when app has been minimized
     private fun onAppInBackground() {
         viewModel.sendTemporaryDisconnectRequest()
     }
