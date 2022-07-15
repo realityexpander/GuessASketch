@@ -92,7 +92,7 @@ class DrawingActivity:
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var speechRecognizerIntent: Intent
 
-    // Drawing view restore after config change
+    // Restore the drawing view pathData stack after config change
     var handledPathDataStackRestoreAfterConfigChange = false
 
 
