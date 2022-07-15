@@ -85,7 +85,7 @@ class DrawingActivity:
 
     // Drawer menu (List of players, rank, score)
     private lateinit var toggleDrawer: ActionBarDrawerToggle
-    @Inject  // because the PlayerAdapter constructor as no args, we have injected it
+    @Inject  // because the PlayerAdapter constructor as no args, we can inject it
     lateinit var rvPlayersAdapter: PlayerAdapter
 
     // Speech recognition
