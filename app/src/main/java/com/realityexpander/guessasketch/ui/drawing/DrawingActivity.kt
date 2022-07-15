@@ -207,6 +207,7 @@ class DrawingActivity:
         setupDrawingViewTouchListenerToSendDrawDataToServer(binding.drawingView)
     }
 
+
     ///////////////////////////////////
     // Setup UI                      //
     ///////////////////////////////////
@@ -585,13 +586,14 @@ class DrawingActivity:
         }
     }
 
+
     /////////////////////////////////////
     // Lifecycle Handling              //
     /////////////////////////////////////
 
     // Lifecycle Observer
-    // The reason we call this instead of onStop is because we are using the voice recording
-    //   functionality and it requires the activity to be stopped while recording permissions
+    // The reason we use this instead of `onStop` is because we are using the voice recording
+    //   functionality and it requires the activity to be stopped while the "recording permissions"
     //   are being requested. This allows the game to continue while the permissions are
     //   being requested. This @OnLifecycleEvent ON_STOP is called *ONLY* when the activity has
     //   completely stopped.
@@ -623,6 +625,7 @@ class DrawingActivity:
         super.onDestroy()
         speechRecognizer.destroy()
     }
+
 
     ////////////////////////////////////
     // Drawing View handling          //
@@ -832,6 +835,7 @@ class DrawingActivity:
         viewModel.sendBaseMessageType(setWordToGuess)
     }
 
+
     /////////////////////////////////////////
     // Players List in the Nav Drawer      //
     /////////////////////////////////////////
@@ -854,6 +858,7 @@ class DrawingActivity:
 
         rvPlayersAdapter.updatePlayers(playersWithRoomNameFirst, lifecycleScope)
     }
+
 
     ///////////////////////////////////////////////////////////////////
     // Permissions Handling for recording audio & speech recognition //
@@ -906,6 +911,7 @@ class DrawingActivity:
             }
         }
     }
+
 
     ///////////////////////////////////////////////////////////////////
     // Speech Recognizer Handling                                    //
@@ -974,6 +980,7 @@ class DrawingActivity:
     override fun onEvent(eventType: Int, params: Bundle?) {
         /* do nothing */
     }
+
 
     ///////////////////////////////////////////////////////////////////
     // UI Utils                                                      //
