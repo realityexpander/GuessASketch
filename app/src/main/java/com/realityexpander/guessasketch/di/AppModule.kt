@@ -99,7 +99,6 @@ object AppModule {
             .create(SetupApi::class.java)  // interface must be supplied here, unlike Scarlet
     }
 
-
     @Singleton
     @Provides
     fun provideDispatcherProvider(): DispatcherProvider {

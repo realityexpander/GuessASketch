@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realityexpander.guessasketch.data.remote.common.Room
 import com.realityexpander.guessasketch.repository.SetupRepository
-import com.realityexpander.guessasketch.util.Constants.MAX_PLAYER_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MAX_ROOM_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MIN_PLAYER_NAME_LENGTH
-import com.realityexpander.guessasketch.util.Constants.MIN_ROOM_NAME_LENGTH
+import com.realityexpander.guessasketch.ui.common.Constants.MAX_PLAYER_NAME_LENGTH
+import com.realityexpander.guessasketch.ui.common.Constants.MAX_ROOM_NAME_LENGTH
+import com.realityexpander.guessasketch.ui.common.Constants.MIN_PLAYER_NAME_LENGTH
+import com.realityexpander.guessasketch.ui.common.Constants.MIN_ROOM_NAME_LENGTH
 import com.realityexpander.guessasketch.util.DispatcherProvider
 import com.realityexpander.guessasketch.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
