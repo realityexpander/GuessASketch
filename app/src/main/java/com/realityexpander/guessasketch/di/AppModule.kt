@@ -68,6 +68,7 @@ object AppModule {
     @Provides
     @Named(CLIENT_ID)
     fun provideClientId(@ApplicationContext context: Context): String {
+        // Get clientId from the data store
         return runBlocking {
             context.dataStore.clientId()
         }

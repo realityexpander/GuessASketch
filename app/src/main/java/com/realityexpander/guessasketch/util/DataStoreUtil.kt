@@ -24,10 +24,13 @@ suspend fun DataStore<Preferences>.clientId(): String {
     return if(clientIdExists) {
         preferences[clientIdKey] ?: ""
     } else {
+        // If it doesn't exist, create it
         val newClientId = UUID.randomUUID().toString()
+
         edit { settings ->
             settings[clientIdKey] = newClientId
         }
+
         newClientId
     }
 }
