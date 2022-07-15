@@ -105,6 +105,7 @@ class DrawingViewModel @Inject constructor(
     //////////////////////////////
 
     // Can use this to wrap the websocket messagesTypes with more data (if necessary)
+    //   (not used in this project yet)
     data class MessageEvent<T: BaseMessageType>(val data: T, val type: String, val extra: String) //: SocketMessageEvent()
 
     // Socket connection events
