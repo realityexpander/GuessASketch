@@ -532,7 +532,7 @@ class DrawingActivity:
                         when(message.action) {
                             DRAW_ACTION_UNDO -> { binding.drawingView.undo() }
                             DRAW_ACTION_DRAW -> { /* do nothing */ }
-                            DRAW_ACTION_ERASE -> { /* do nothing */ }
+                            DRAW_ACTION_ERASE -> { binding.drawingView.clearDrawing() }
                             else -> {
                                 Timber.DebugTree().e("DrawingActivity - Unexpected DrawAction action: ${message.action}")
                             }

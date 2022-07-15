@@ -223,6 +223,11 @@ class DrawingViewModel @Inject constructor(
                         }
                     }
                     is CurRoundDrawData -> {
+                        // Clear the current drawPathDataStack
+                        //   (this data stream will re-create it, so that it takes into account any
+                        //    new drawings or undo actions)
+                        _socketBaseMessageEventChannel.send(DrawAction(DrawAction.DRAW_ACTION_ERASE))
+
                         // We get a message with a list of json strings that represents that draw data for the current round
                         // We need to convert this to a list of DrawData and DrawAction objects
                         message.data.forEach { json ->
