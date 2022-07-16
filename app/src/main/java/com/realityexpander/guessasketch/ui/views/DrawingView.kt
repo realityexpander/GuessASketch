@@ -81,6 +81,7 @@ class DrawingView @JvmOverloads constructor(
         pathDataStackChangedListener = listener
     }
 
+    // Called after a config change to restore the pathDataStack
     fun restorePathDataStack(pathDataStack: Stack<PathData>) {
         this.pathDataStack = pathDataStack
     }
@@ -150,7 +151,10 @@ class DrawingView @JvmOverloads constructor(
 
     }
 
-    //// DRAWING METHODS ////
+
+    //////////////////////////////////////////////////////////
+    //// DRAWING METHODS                                  ////
+    //////////////////////////////////////////////////////////
 
     var isCanvasStartedTouch = false  // fixes Android bug where ACTION_MOVE is called after ACTION_UP
 
@@ -228,8 +232,10 @@ class DrawingView @JvmOverloads constructor(
         invalidate()
     }
 
+
     //////////////////////////////////////////////////////////
     //// RESPOND TO THE SERVER SENDING A NEW PATH TO DRAW ////
+    //////////////////////////////////////////////////////////
 
     private var startedTouchExternally = false
 
