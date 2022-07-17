@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.realityexpander.guessasketch.ui.common.Constants.DEFAULT_PAINT_STROKE_WIDTH
-import com.realityexpander.guessasketch.util.Constants
 import java.util.*
 import kotlin.math.abs
 
@@ -237,10 +236,10 @@ class DrawingView @JvmOverloads constructor(
     //// RESPOND TO THE SERVER SENDING A NEW PATH TO DRAW ////
     //////////////////////////////////////////////////////////
 
-    private var startedTouchExternally = false
+    private var isTouchStartedExternally = false
 
     fun startTouchExternally(fromX: Float, fromY: Float, color: Int, strokeWidth: Float) {
-        startedTouchExternally = true
+        isTouchStartedExternally = true
 
         paint.color = color
         paint.strokeWidth = strokeWidth
@@ -250,9 +249,9 @@ class DrawingView @JvmOverloads constructor(
     fun moveTouchExternally(toX: Float, toY: Float, color: Int, strokeWidth: Float) {
 
         // Prevents a bug if startTouchExternally() is NOT called before moveTouchExternally()
-        if (!startedTouchExternally) {
+        if (!isTouchStartedExternally) {
             startTouchExternally(toX, toY, color, strokeWidth)
-            startedTouchExternally = true
+            isTouchStartedExternally = true
         }
 
         paint.color = color
@@ -264,7 +263,7 @@ class DrawingView @JvmOverloads constructor(
 
         stopTouch()
 
-        startedTouchExternally = false
+        isTouchStartedExternally = false
     }
 
 }
