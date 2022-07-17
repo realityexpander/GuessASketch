@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import java.lang.reflect.Type
 
+// Convert WebSocket Stream to a Kotlin Flow.
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class FlowStreamAdapter<T>: StreamAdapter<T, Flow<T>> {
 
