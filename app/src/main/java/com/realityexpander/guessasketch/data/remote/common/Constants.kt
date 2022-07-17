@@ -6,7 +6,7 @@ package com.realityexpander.guessasketch.data.remote.common
 
 object Constants {
 
-    private const val USE_LOCALHOST = true
+    private const val USE_LOCALHOST = false
     private const val USE_LOCAL_EMULATOR = false
     private const val REMOTE_HOST_TYPE = "HEROKU"  // "HEROKU" or "UBUNTU"
 

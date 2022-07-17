@@ -18,7 +18,7 @@ import com.realityexpander.guessasketch.util.navigateSafely
 import com.realityexpander.guessasketch.util.snackbar
 import kotlinx.coroutines.flow.collect
 
-@AndroidEntryPoint  // is this needed since nothing is injected?
+//@AndroidEntryPoint  // is this needed since nothing is injected?
 class UsernameFragment: Fragment(R.layout.fragment_player_name) {
 
     private var _binding: FragmentPlayerNameBinding? = null

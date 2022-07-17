@@ -14,6 +14,7 @@ class CoroutineCountdownTimer {
     ): Job {
         return coroutineScope.launch(dispatcher) {
             var time = durationMillis
+
             while (time >= 0) {
                 onTick(time)
                 delay(emitFrequencyMillis)
