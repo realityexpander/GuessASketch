@@ -6,7 +6,7 @@ import com.tinder.scarlet.ws.Receive
 import com.tinder.scarlet.ws.Send
 import kotlinx.coroutines.flow.Flow
 
-// Handles WebSocket messages
+// Handles WebSocket messages for drawing commands
 interface DrawingApi {
 
     @Receive

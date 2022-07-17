@@ -9,6 +9,8 @@ import com.tinder.scarlet.MessageAdapter
 import timber.log.Timber
 import java.lang.reflect.Type
 
+// Convert WebSocket messages to BaseMessageType objects
+
 class CustomGsonMessageAdapter<T> private constructor(
     private val gson: Gson
 ): MessageAdapter<T> {
@@ -27,7 +29,7 @@ class CustomGsonMessageAdapter<T> private constructor(
         val typeStr = messageJsonObject["type"].asString
             ?: throw IllegalArgumentException("Error: 'type' field not found in $messageJson")
 
-        // Convert "type" to a socket message class to be used for gson deserialization
+        // Lookup the message "type" for a BaseMessageType class to be used for gson deserialization
         val type = SocketMessageType.messageTypeMap[typeStr] // table lookup
         ?: let {
             Timber.e("Error: Unknown SocketMessageType: $typeStr for $messageJson")

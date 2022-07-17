@@ -6,6 +6,7 @@ typealias ClientId = String
 typealias RoomName = String
 typealias SessionId = String
 
+// Map of SocketMessage type to it corresponding BaseMessageType class.
 
 object SocketMessageType {
 
