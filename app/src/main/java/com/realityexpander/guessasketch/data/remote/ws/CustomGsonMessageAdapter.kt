@@ -36,7 +36,7 @@ class CustomGsonMessageAdapter<T> private constructor(
         }
 
         try {
-            // convert payload JSON string to the "type" of SocketMessageType object
+            // convert JSON string payload to the "type" of BaseMessageType class
             val payload = gson.fromJson(messageJson, type)
 
             @Suppress("UNCHECKED_CAST")
