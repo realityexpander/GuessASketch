@@ -41,14 +41,14 @@ object Constants {
 
     private const val WS_BASE_URL_REMOTE_UBUNTU = "ws://82.180.173.232:8005/ws/draw"   // note: insecure traffic, NO SSL
     private const val WS_BASE_URL_REMOTE_HEROKU = "https://guess-a-sketch-server.herokuapp.com/ws/draw"
-    private const val WS_BASE_URL_LOCALHOST = "ws://192.168.0.186:8005/ws/draw"  // ip address of your dev machine
+    private const val WS_BASE_URL_LOCALHOST_PHYSICAL_HARDWARE = "ws://192.168.0.186:8005/ws/draw"  // ip address of your dev machine
     private const val WS_BASE_URL_LOCALHOST_EMULATOR = "ws://10.0.2.2:8005/ws/draw"
 
     val WS_BASE_URL = if (USE_LOCALHOST) {
         if(USE_LOCAL_EMULATOR) {
             WS_BASE_URL_LOCALHOST_EMULATOR
         } else {
-            WS_BASE_URL_LOCALHOST
+            WS_BASE_URL_LOCALHOST_PHYSICAL_HARDWARE
         }
     } else {
         when(REMOTE_HOST_TYPE) {
