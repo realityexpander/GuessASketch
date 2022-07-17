@@ -37,17 +37,17 @@ class DrawingViewModel @Inject constructor(
     /// UI State Events        ///
     //////////////////////////////
 
-    // Current selected "pick color" radio button
+    // Current selected "pick color" radio button id
     private val _selectedColorButtonId =
         MutableStateFlow(R.id.rbBlack)
     val selectedColorButtonId: StateFlow<Int> = _selectedColorButtonId
 
-    // Connection Progress bar visibility
+    // Connection Progress indicator visibility
     private val _isConnectionProgressBarVisible =
         MutableStateFlow(true)
     val isConnectionProgressBarVisible: StateFlow<Boolean> = _isConnectionProgressBarVisible
 
-    // Choose Word Overlay visibility
+    // "Pick Word" Overlay visibility
     private val _isPickWordOverlayVisible =
         MutableStateFlow(false)
     val isPickWordOverlayVisible: StateFlow<Boolean> = _isPickWordOverlayVisible
@@ -57,7 +57,7 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow<List<BaseMessageType>>(listOf())
     val chatMessages: StateFlow<List<BaseMessageType>> = _chatMessages
 
-    // Words To Pick (3 words that the drawing player picks one of to draw)
+    // "Words To Pick" list (3 words that the drawing player picks one of to draw)
     private val _wordsToPick =
         MutableStateFlow(WordsToPick(listOf()))
     val wordsToPick: StateFlow<WordsToPick> = _wordsToPick
@@ -79,7 +79,7 @@ class DrawingViewModel @Inject constructor(
         MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState
 
-    // Drawing PathData Stack
+    // Drawing PathData Stack (for undo/redo)
     private val _pathDataStack =
         MutableStateFlow(Stack<DrawingView.PathData>())
     val pathDataStack: StateFlow<Stack<DrawingView.PathData>> = _pathDataStack
