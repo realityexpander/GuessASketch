@@ -11,6 +11,7 @@ Game features:
 - As many as 8 players at a time per room
 - Score board
 - Real-time chat
+- Speech-to-text functionality to guess word or chat
 
 # Technologies employed:
 
