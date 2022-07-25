@@ -1,5 +1,5 @@
-# GuessASketch
-Android App for the Ktor-guessasketch-server backend
+# Guess-A-Sketch
+Multi-player real-time game for Android using the Ktor-guessasketch-server backend
 
 Backend repo: 
 
